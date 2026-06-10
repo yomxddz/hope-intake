@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HOPE Therapy - Intake Tool</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gd:#1a3028;--gm:#243d30;--ga:#4a7c59;
+  --cr:#f0ece4;--cd:#e5e0d6;--cw:#fff;--go:#c9a84c;
+  --tx:#1a2820;--t2:#3d5248;--t3:#6b7c74;--t4:#9aada5;
+  --bd:rgba(26,48,40,.11);--bd2:rgba(26,48,40,.2);
+  --ac:#1a5c2a;--acl:#e6f2ea;--acb:#a8d5b0;
+  --er:#7a1f1f;--erl:#fbeaea;--erb:#e8a0a0;
+  --am:#7a5200;--aml:#fdf5e6;--amb:#d4a843;
+  --r:6px;--rl:10px;
+  --f:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body{font-family:var(--f);background:var(--cr);color:var(--tx);font-size:13px;line-height:1.5;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.hdr{background:var(--gd);padding:0 18px;height:46px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hdr-brand .hdr-sub{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38)}
+.hdr-brand .hdr-ttl{font-size:15px;font-weight:700;color:#fff;line-height:1.1}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.hdr-stat{font-size:11px;color:rgba(255,255,255,.6);padding:3px 10px;border:1px solid rgba(255,255,255,.15);border-radius:20px}
+.hdr-stat b{color:#fff}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#9aada5;flex-shrink:0;transition:background .3s}
+.sync-dot.ok{background:#a8d5b0}
+.sync-dot.err{background:#e8a0a0}
+.sync-dot.spin{background:var(--go);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-lbl{font-size:10px;color:rgba(255,255,255,.5)}
+.sync-lbl.ok{color:#a8d5b0}
+.btn-hdr{padding:5px 12px;border-radius:var(--r);border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;font-family:var(--f)}
+.btn-hdr:hover{background:rgba(255,255,255,.2)}
+.nav{background:var(--gm);display:flex;gap:2px;padding:0 18px;flex-shrink:0;border-bottom:2px solid rgba(0,0,0,.15)}
+.ntab{padding:8px 14px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.5);font-family:var(--f);border-bottom:2px solid transparent;margin-bottom:-2px}
+.ntab.on{color:#fff;border-bottom-color:var(--go)}
+.ntab:hover{color:rgba(255,255,255,.8)}
+.view{display:none;flex:1;overflow:hidden}
+.view.on{display:flex}
+.shell{display:grid;grid-template-columns:280px 1fr;flex:1;overflow:hidden;width:100%}
+.left{background:var(--cw);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.lscroll{flex:1;overflow-y:auto;padding-bottom:8px}
+.lscroll::-webkit-scrollbar{width:3px}
+.lscroll::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+.ai-box{background:var(--gd);padding:10px 12px}
+.ai-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--go);margin-bottom:3px}
+.ai-desc{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:6px}
+.ai-ta{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:var(--r);padding:6px 8px;font-family:var(--f);font-size:11px;color:rgba(255,255,255,.82);resize:none;height:52px;outline:none}
+.ai-ta::placeholder{color:rgba(255,255,255,.22)}
+.ai-foot{display:flex;align-items:center;gap:8px;margin-top:5px}
+.ai-btn{padding:5px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r);color:rgba(255,255,255,.82);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:var(--f)}
+.ai-btn:hover{background:rgba(255,255,255,.18)}
+.ai-btn:disabled{opacity:.4;cursor:not-allowed}
+.ai-st{font-size:10px;color:var(--go);font-style:italic;flex:1}
+.fsec{padding:8px 12px;border-bottom:1px solid var(--bd)}
+.stl{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.fsel{width:100%;padding:5px 8px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:11px;color:var(--tx);background:#fff;outline:none;margin-bottom:4px;appearance:none}
+.fsel:focus{border-color:var(--ga)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.iss-search{width:100%;padding:5px 8px 5px 22px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:11px;color:var(--tx);outline:none;background:#fff;margin-bottom:6px}
+.iss-search:focus{border-color:var(--ga)}
+.iss-clr{font-size:10px;color:var(--ga);background:none;border:none;cursor:pointer;font-family:var(--f);padding:0;font-weight:500}
+.cnt-b{background:var(--gd);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px}
+.groups{display:flex;flex-direction:column;gap:6px}
+.grp-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:2px}
+.chip{padding:3px 7px;border-radius:20px;border:1px solid var(--bd2);background:#fff;font-size:10px;cursor:pointer;color:var(--t2);font-family:var(--f);line-height:1.4;user-select:none}
+.chip:hover{border-color:var(--ga);color:var(--gd);background:#f0f5f2}
+.chip.on{background:var(--acl);border-color:var(--acb);color:var(--ac);font-weight:600}
+.reset-bar{padding:7px 12px;flex-shrink:0;border-top:1px solid var(--bd)}
+.reset-btn{width:100%;padding:6px;border:1px solid var(--bd2);border-radius:var(--r);background:#fff;color:var(--t2);font-size:11px;cursor:pointer;font-family:var(--f)}
+.reset-btn:hover{background:var(--cr)}
+.right{display:flex;flex-direction:column;overflow:hidden;background:var(--cr)}
+.rtop{padding:9px 14px 7px;flex-shrink:0;border-bottom:1px solid var(--bd);background:var(--cw);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rttl{font-size:13px;font-weight:700;color:var(--tx)}
+.rmeta{font-size:11px;color:var(--t3)}
+.rscroll{flex:1;overflow-y:auto;padding:10px 14px 20px}
+.rscroll::-webkit-scrollbar{width:4px}
+.rscroll::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px 20px}
+.empty-ico{font-size:32px;margin-bottom:10px;opacity:.3}
+.empty-t{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:4px}
+.empty-s{font-size:11px;color:var(--t3);line-height:1.6}
+.cards{display:flex;flex-direction:column;gap:6px}
+.ccard{background:var(--cw);border-radius:var(--rl);border:1px solid var(--bd);overflow:hidden}
+.ccard:hover{border-color:rgba(74,124,89,.3);box-shadow:0 2px 8px rgba(26,48,40,.07)}
+.mbar{height:3px;background:var(--cd)}
+.mfill{height:100%}
+.cbody{padding:10px 12px}
+.ctop{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.cav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid rgba(26,48,40,.06)}
+.ci{flex:1;min-width:0}
+.cname{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:1px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.cpct{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.ccred{font-size:10px;color:var(--t2)}
+.cbdg{display:flex;flex-wrap:wrap;gap:2px;justify-content:flex-end;flex-shrink:0}
+.badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:9px;white-space:nowrap;border:1px solid}
+.b-l{background:#e8f0ed;color:#2d4a3e;border-color:#b0ccc0}
+.b-s{background:#f0ede8;color:#5a4a30;border-color:#c8b89a}
+.b-e{background:var(--aml);color:var(--am);border-color:var(--amb)}
+.b-k{background:#e6eef8;color:#1a3a7a;border-color:#90a8d8}
+.qrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:5px;font-size:10px;color:var(--t2)}
+.cnotes{background:#f5f8f5;border-left:3px solid var(--ga);border-radius:0 var(--r) var(--r) 0;padding:4px 8px;font-size:10px;color:var(--t2);line-height:1.5;margin-bottom:5px}
+.mw{margin-bottom:5px}
+.mlbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
+.tags{display:flex;flex-wrap:wrap;gap:2px}
+.tag{font-size:10px;padding:2px 6px;border-radius:9px;border:1px solid var(--bd);background:var(--cr);color:var(--t2)}
+.tag.m{background:var(--acl);border-color:var(--acb);color:var(--ac);font-weight:600}
+.tag.mo{background:var(--aml);border-color:var(--amb);color:var(--am)}
+.avs{border-top:1px solid var(--bd);padding:7px 12px;background:#fafaf8}
+.av-ttl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:5px}
+.av-grid{display:flex;flex-wrap:wrap;gap:3px}
+.av-day{background:var(--acl);border:1px solid var(--acb);border-radius:var(--r);padding:3px 7px;font-size:10px;color:var(--ac)}
+.cact{border-top:1px solid var(--bd);padding:6px 12px;display:flex;align-items:center;gap:5px;background:var(--cw);flex-wrap:wrap}
+.stog{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--r);border:1px solid;cursor:pointer;font-size:10px;font-weight:600;font-family:var(--f);transition:all .15s}
+.stog.acc{background:var(--acl);border-color:var(--acb);color:var(--ac)}
+.stog.nac{background:var(--erl);border-color:var(--erb);color:var(--er)}
+.stog:hover{filter:brightness(.93)}
+.b-prof{font-size:10px;color:var(--ga);text-decoration:none;font-weight:500}
+.b-more{font-size:10px;color:var(--t3);background:none;border:none;cursor:pointer;font-family:var(--f);padding:0}
+.b-edit{font-size:10px;padding:3px 8px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--cw);cursor:pointer;font-family:var(--f);color:var(--t2);margin-left:auto}
+.b-del{font-size:10px;padding:3px 8px;border-radius:var(--r);border:1px solid var(--erb);background:var(--erl);color:var(--er);cursor:pointer;font-family:var(--f)}
+.xmore{display:none;padding:0 12px 8px;background:var(--cw)}
+.xmore.open{display:block}
+.xlbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:2px;margin-top:6px}
+.roster-view{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.rtbar{padding:9px 14px;background:var(--cw);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.r-search{padding:6px 9px 6px 26px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:11px;color:var(--tx);outline:none;background:#fff;width:190px}
+.r-search:focus{border-color:var(--ga)}
+.r-filter{padding:6px 8px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:11px;color:var(--tx);background:#fff;outline:none;appearance:none}
+.r-meta{font-size:11px;color:var(--t3);margin-left:auto}
+.rbtn{padding:6px 12px;border-radius:var(--r);border:none;background:var(--gd);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--f)}
+.rbtn:hover{background:var(--gm)}
+.roster-scroll{flex:1;overflow-y:auto}
+.roster-scroll::-webkit-scrollbar{width:4px}
+.roster-scroll::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+table{width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:10}
+th{background:var(--gd);color:rgba(255,255,255,.7);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:8px 12px;text-align:left;white-space:nowrap}
+th:first-child{padding-left:14px}
+th:last-child{padding-right:14px}
+td{padding:8px 12px;border-bottom:1px solid var(--bd);vertical-align:middle;font-size:11px;color:var(--tx)}
+td:first-child{padding-left:14px}
+td:last-child{padding-right:14px}
+tr:hover td{background:#fafaf8}
+.r-name{font-weight:600}
+.r-cred{font-size:10px;color:var(--t3)}
+.st-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid;transition:all .15s}
+.st-pill.acc{background:var(--acl);border-color:var(--acb);color:var(--ac)}
+.st-pill.nac{background:var(--erl);border-color:var(--erb);color:var(--er)}
+.st-pill:hover{filter:brightness(.92)}
+.r-av-chip{font-size:9px;padding:1px 5px;border-radius:8px;background:var(--acl);border:1px solid var(--acb);color:var(--ac);white-space:nowrap;margin:1px}
+.r-tags{display:flex;flex-wrap:wrap;gap:2px}
+.r-tag{font-size:10px;padding:1px 5px;border-radius:8px;background:var(--cr);border:1px solid var(--bd);color:var(--t2)}
+.r-actions{display:flex;gap:4px}
+.r-edit{font-size:10px;padding:3px 8px;border-radius:var(--r);border:1px solid var(--bd2);background:#fff;cursor:pointer;font-family:var(--f);color:var(--t2)}
+.r-del{font-size:10px;padding:3px 8px;border-radius:var(--r);border:1px solid var(--erb);background:var(--erl);color:var(--er);cursor:pointer;font-family:var(--f)}
+.settings-view{flex:1;overflow-y:auto;padding:16px;background:var(--cr)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:1000px}
+.scard{background:var(--cw);border-radius:var(--rl);border:1px solid var(--bd);overflow:hidden}
+.scard-hdr{background:var(--gd);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.scard-hdr h3{font-size:12px;font-weight:700;color:#fff}
+.scard-body{padding:12px 14px;max-height:300px;overflow-y:auto}
+.sitem{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--bd)}
+.sitem:last-child{border-bottom:none}
+.sitem-name{flex:1;font-size:11px;color:var(--tx)}
+.sdel{background:none;border:none;cursor:pointer;color:var(--t3);font-size:15px;padding:0 2px}
+.sdel:hover{color:var(--er)}
+.sgrp-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin:8px 0 4px;padding-top:4px;border-top:1px solid var(--bd)}
+.sgrp-lbl:first-child{margin-top:0;border-top:none;padding-top:0}
+.sadd-row{display:flex;gap:6px;padding:9px 14px;border-top:1px solid var(--bd);background:#fafaf8}
+.sadd-inp{flex:1;padding:6px 8px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:11px;color:var(--tx);outline:none}
+.sadd-inp:focus{border-color:var(--ga)}
+.sadd-sel{padding:6px 8px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:11px;color:var(--tx);background:#fff;outline:none;appearance:none;min-width:120px}
+.sadd-btn{padding:6px 12px;background:var(--gd);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-size:11px;font-weight:700;font-family:var(--f);white-space:nowrap}
+.overlay{display:none;position:fixed;inset:0;background:rgba(26,40,32,.5);z-index:200;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:min(700px,100%);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(26,48,40,.2)}
+.mhdr{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--gd)}
+.mhdr h2{font-size:13px;font-weight:700;color:#fff}
+.mcls{background:none;border:none;font-size:18px;cursor:pointer;color:rgba(255,255,255,.5);line-height:1}
+.mcls:hover{color:#fff}
+.mtabs{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0;background:#fff}
+.mtab{padding:7px 14px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:500;font-family:var(--f);color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px}
+.mtab.on{color:var(--gd);border-bottom-color:var(--ga)}
+.mbody{padding:14px 16px;overflow-y:auto;flex:1}
+.mftr{padding:9px 16px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:7px;flex-shrink:0;background:var(--cr)}
+.fg2m{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.full{grid-column:1/-1}
+.flbl{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:2px;margin-top:9px}
+.flbl:first-child{margin-top:0}
+.fi{width:100%;padding:6px 8px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:12px;color:var(--tx);outline:none;background:#fff}
+.fi:focus{border-color:var(--ga)}
+textarea.fi{resize:vertical;min-height:52px;line-height:1.5}
+.ms-w{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.ms{padding:3px 8px;border-radius:20px;border:1px solid var(--bd2);background:#fff;font-size:10px;cursor:pointer;color:var(--t2);user-select:none;font-family:var(--f)}
+.ms:hover{border-color:var(--ga);color:var(--gd);background:#f0f5f2}
+.ms.sel{background:var(--acl);border-color:var(--acb);color:var(--ac);font-weight:600}
+.ms.sel.g{background:var(--aml);border-color:var(--amb);color:var(--am)}
+.trow{display:flex;gap:12px;flex-wrap:wrap;margin-top:5px}
+.ti{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.tgl{position:relative;width:30px;height:17px;flex-shrink:0}
+.tgl input{opacity:0;position:absolute;width:0;height:0}
+.tgt{position:absolute;inset:0;background:#c8d8d0;border-radius:20px;transition:.18s;cursor:pointer}
+.tgl input:checked+.tgt{background:var(--ga)}
+.tgt::before{content:"";position:absolute;width:13px;height:13px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.18s}
+.tgl input:checked+.tgt::before{transform:translateX(13px)}
+.tl{font-size:11px;color:var(--t2)}
+.av-editor{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.av-day-row{background:var(--cr);border-radius:var(--r);padding:8px 10px;border:1px solid var(--bd)}
+.av-day-name{font-size:11px;font-weight:700;color:var(--tx);margin-bottom:6px}
+.av-blocks{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.av-block{padding:4px 10px;border-radius:20px;border:1px solid var(--bd2);background:#fff;font-size:11px;cursor:pointer;color:var(--t2);font-family:var(--f);user-select:none}
+.av-block:hover{border-color:var(--ga);color:var(--gd)}
+.av-block.sel{background:var(--acl);border-color:var(--acb);color:var(--ac);font-weight:600}
+.av-office-row{display:flex;align-items:center;gap:6px}
+.av-office-lbl{font-size:10px;color:var(--t3);white-space:nowrap}
+.av-office-sel{flex:1;padding:4px 7px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:11px;color:var(--tx);background:#fff;outline:none;appearance:none}
+.conf-card{background:#fff;border-radius:12px;padding:20px;width:min(340px,100%);box-shadow:0 8px 32px rgba(26,48,40,.18)}
+.conf-card h3{font-size:13px;font-weight:700;margin-bottom:6px}
+.conf-card p{font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6}
+.conf-act{display:flex;gap:7px;justify-content:flex-end}
+.btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--f);border:1px solid}
+.btn-out{background:#fff;border-color:var(--bd2);color:var(--t2)}
+.btn-out:hover{background:var(--cr)}
+.btn-pri{background:var(--gd);border-color:var(--gd);color:#fff;font-weight:600}
+.btn-pri:hover{background:var(--gm)}
+.btn-dan{background:var(--er);border-color:var(--er);color:#fff;font-weight:600}
+.toast{position:fixed;bottom:14px;right:14px;background:var(--gd);color:#fff;padding:7px 13px;border-radius:var(--r);font-size:12px;font-weight:500;z-index:999;opacity:0;pointer-events:none;transition:opacity .2s;box-shadow:0 4px 16px rgba(26,48,40,.2)}
+.toast.show{opacity:1}
+.setup-banner{position:fixed;inset:0;background:rgba(26,40,32,.85);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-card{background:#fff;border-radius:14px;padding:28px;width:min(560px,100%);box-shadow:0 12px 48px rgba(0,0,0,.3)}
+.setup-card h2{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:6px}
+.setup-card p{font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:14px}
+.setup-step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.setup-num{width:22px;height:22px;border-radius:50%;background:var(--gd);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.setup-text{font-size:12px;color:var(--t2);line-height:1.6}
+.setup-inp{width:100%;padding:9px 11px;border:1px solid var(--bd2);border-radius:var(--r);font-family:var(--f);font-size:12px;color:var(--tx);outline:none;margin-top:12px}
+.setup-inp:focus{border-color:var(--ga)}
+.setup-btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+</style>
+</head>
+<body>
+
+<!-- FIREBASE SETUP BANNER (shown on first load if not configured) -->
+<div class="setup-banner" id="setup-banner" style="display:none">
+  <div class="setup-card">
+    <h2>&#128293; One-time Firebase Setup</h2>
+    <p>This tool needs a free Firebase database so all your coordinators see the same live data. Takes 3 minutes.</p>
+    <div class="setup-step"><div class="setup-num">1</div><div class="setup-text">Go to <strong>console.firebase.google.com</strong> and sign in with Google</div></div>
+    <div class="setup-step"><div class="setup-num">2</div><div class="setup-text">Click <strong>Create a project</strong> &rarr; name it "hope-intake" &rarr; click through (disable Analytics is fine) &rarr; Create</div></div>
+    <div class="setup-step"><div class="setup-num">3</div><div class="setup-text">In the left sidebar click <strong>Build &rarr; Realtime Database &rarr; Create database &rarr; Start in test mode &rarr; Enable</strong></div></div>
+    <div class="setup-step"><div class="setup-num">4</div><div class="setup-text">Copy the database URL shown (looks like <code>https://hope-intake-xxxxx-default-rtdb.firebaseio.com</code>) and paste it below</div></div>
+    <input class="setup-inp" id="fb-url-inp" placeholder="https://your-project-default-rtdb.firebaseio.com" oninput="validateFbUrl(this.value)">
+    <div class="setup-btns">
+      <button class="btn btn-out" onclick="skipSetup()">Use locally only (no sync)</button>
+      <button class="btn btn-pri" id="setup-save-btn" onclick="saveFirebaseUrl()" disabled>Connect &amp; Save</button>
+    </div>
+  </div>
+</div>
+
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-sub">Hope Therapy Group</div>
+    <div class="hdr-ttl">Intake Matching Tool</div>
+  </div>
+  <div class="hdr-r">
+    <div class="hdr-stat" id="hdr-stat"><b>-</b> accepting</div>
+    <div style="display:flex;align-items:center;gap:5px">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span class="sync-lbl" id="sync-lbl">connecting...</span>
+    </div>
+    <button class="btn-hdr" onclick="openAdd()">+ Add Clinician</button>
+  </div>
+</header>
+<nav class="nav">
+  <button class="ntab on" id="nt-intake" onclick="showView('intake')">&#128269; Intake Matcher</button>
+  <button class="ntab" id="nt-roster" onclick="showView('roster')">&#128101; Roster</button>
+  <button class="ntab" id="nt-settings" onclick="showView('settings')">&#9881; Manage Lists</button>
+</nav>
+
+<div class="view on" id="v-intake">
+  <div class="shell">
+    <aside class="left">
+      <div class="lscroll">
+        <div class="ai-box">
+          <div class="ai-lbl">&#10022; AI Smart Notes</div>
+          <div class="ai-desc">Paste call notes to auto-fill filters</div>
+          <textarea class="ai-ta" id="ai-ta" placeholder='e.g. "Mom calling for 15yo. Kaiser, near Clairemont. Anxiety and trauma."'></textarea>
+          <div class="ai-foot"><button class="ai-btn" id="ai-btn" onclick="analyzeNotes()">Analyze</button><span class="ai-st" id="ai-st"></span></div>
+        </div>
+        <div class="fsec">
+          <div class="stl">Client Profile</div>
+          <div class="fg2">
+            <select class="fsel" id="f-loc" onchange="render()"><option value="">Any location</option></select>
+            <select class="fsel" id="f-pop" onchange="render()"><option value="">Any client type</option><option>Children (3+)</option><option>Children (4-8)</option><option>Children (5-12)</option><option>Children (10-13)</option><option>Teens (13-18)</option><option>Teens (16-18)</option><option>Young Adults (18-24)</option><option>Adults (24+)</option><option>Adults (55+)</option><option>Elderly / Retired (65+)</option><option>Couples</option><option>Families</option></select>
+            <select class="fsel" id="f-ins" onchange="render()"><option value="">Any insurance</option><option value="kaiser">Kaiser</option><option value="champva">CHAMPVA</option></select>
+            <select class="fsel" id="f-flag" onchange="render()"><option value="">Any flag</option></select>
+            <select class="fsel" id="f-lang" onchange="render()"><option value="">Any language</option><option>Spanish</option><option>Farsi</option><option>Korean</option><option>Russian</option><option>Belarusian</option><option>German</option><option>Portuguese</option><option>Tagalog</option><option>Hindi</option><option>Punjabi</option><option>Arabic</option></select>
+            <select class="fsel" id="f-lic" onchange="render()"><option value="">Any license</option><option value="Licensed">Licensed only</option><option value="Associate">Associate OK</option></select>
+            <select class="fsel" id="f-avail" onchange="render()"><option value="">Any availability</option><option value="Morning">Morning</option><option value="Afternoon">Afternoon</option><option value="Evening">Evening</option><option value="Weekend">Weekend</option></select>
+          </div>
+        </div>
+        <div class="fsec">
+          <div class="stl">Presenting Concerns
+            <div style="display:flex;align-items:center;gap:4px">
+              <span id="iss-cnt" class="cnt-b" style="display:none">0</span>
+              <button class="iss-clr" id="iss-clr" style="display:none" onclick="clearIssues()">Clear</button>
+            </div>
+          </div>
+          <input class="iss-search" id="iss-srch" placeholder="Search concerns..." oninput="buildChips()">
+          <div class="groups" id="grp-wrap"></div>
+        </div>
+      </div>
+      <div class="fsec">
+          <div class="stl">Modalities
+            <div style="display:flex;align-items:center;gap:4px">
+              <span id="mod-cnt" class="cnt-b" style="display:none">0</span>
+              <button class="iss-clr" id="mod-clr" style="display:none" onclick="clearMods()">Clear</button>
+            </div>
+          </div>
+          <input class="iss-search" id="mod-srch" placeholder="Search modalities..." oninput="buildModChips()">
+          <div id="mod-wrap" style="display:flex;flex-wrap:wrap;gap:3px"></div>
+        </div>
+        <div class="reset-bar"><button class="reset-btn" onclick="resetAll()">&#8635; Reset All Filters</button></div>
+    </aside>
+    <div class="right">
+      <div class="rtop">
+        <div><div class="rttl">Clinician Matches</div><div class="rmeta" id="res-meta">Select filters to find matches</div></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;color:var(--t3)">Sort:</span>
+          <select class="fsel" style="width:auto;margin-bottom:0;padding:4px 7px" id="sort-sel" onchange="render()">
+            <option value="match">Best Match</option><option value="name">Name A-Z</option><option value="location">Location</option>
+          </select>
+        </div>
+      </div>
+      <div class="rscroll"><div id="results-wrap"><div class="empty"><div class="empty-ico">&#127807;</div><div class="empty-t">Ready to match</div><div class="empty-s">Select filters or concerns on the left.</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="v-roster">
+  <div class="roster-view">
+    <div class="rtbar">
+      <input class="r-search" id="r-srch" placeholder="Search clinicians..." oninput="renderRoster()">
+      <select class="r-filter" id="r-status" onchange="renderRoster()"><option value="">All statuses</option><option value="Accepting">Accepting</option><option value="Not Accepting">Not Accepting</option></select>
+      <select class="r-filter" id="r-loc-f" onchange="renderRoster()"><option value="">All locations</option></select>
+      <select class="r-filter" id="r-lic-f" onchange="renderRoster()"><option value="">All license types</option><option value="Licensed">Licensed</option><option value="Associate">Associate</option></select>
+      <select class="r-filter" id="r-spec-f" onchange="renderRoster()"><option value="">All specialties</option></select>
+      <div class="r-meta" id="r-meta"></div>
+      <button class="rbtn" onclick="openAdd()">+ Add</button>
+    </div>
+    <div class="roster-scroll">
+      <table><thead><tr><th>Clinician</th><th>Status</th><th>Location(s)</th><th>Availability</th><th>Specialties</th><th>Flags</th><th>Actions</th></tr></thead>
+      <tbody id="roster-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="v-settings">
+  <div class="settings-view">
+    <div style="font-size:14px;font-weight:700;color:var(--tx);margin-bottom:3px;display:flex;align-items:center;justify-content:space-between">
+      Manage Lists
+      <div style="display:flex;gap:8px">
+        <button onclick="exportData()" style="padding:6px 13px;background:#4a5568;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--f)">&#8681; Export Backup</button>
+        <button onclick="showSetup()" style="padding:6px 13px;background:var(--gd);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--f)">&#9881; Database Settings</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Add or remove presenting concerns, modalities, and locations.</div>
+    <div class="settings-grid">
+      <div class="scard" style="grid-column:1/-1"><div class="scard-hdr"><h3>Presenting Concerns</h3><span id="iss-count-lbl" style="font-size:10px;color:rgba(255,255,255,.5)"></span></div><div class="scard-body" id="s-issues-body"></div><div class="sadd-row"><input class="sadd-inp" id="s-iss-new" placeholder="New concern..."><select class="sadd-sel" id="s-iss-grp"></select><button class="sadd-btn" onclick="addIssue()">+ Add</button></div></div>
+      <div class="scard"><div class="scard-hdr"><h3>Modalities</h3></div><div class="scard-body" id="s-mods-body"></div><div class="sadd-row"><input class="sadd-inp" id="s-mod-new" placeholder="New modality..."><button class="sadd-btn" onclick="addModality()">+ Add</button></div></div>
+      <div class="scard"><div class="scard-hdr"><h3>Locations</h3></div><div class="scard-body" id="s-locs-body"></div><div class="sadd-row"><input class="sadd-inp" id="s-loc-new" placeholder="New location..."><button class="sadd-btn" onclick="addLocation()">+ Add</button></div></div>
+      <div class="scard"><div class="scard-hdr"><h3>Custom Flags</h3></div><div class="scard-body" id="s-flags-body"></div><div class="sadd-row"><input class="sadd-inp" id="s-flag-new" placeholder="New flag (e.g. Sliding Scale)..."><button class="sadd-btn" onclick="addFlag()">+ Add</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="form-modal">
+  <div class="modal">
+    <div class="mhdr"><h2 id="fm-ttl">Add Clinician</h2><button class="mcls" onclick="closeForm()">&#215;</button></div>
+    <div class="mtabs">
+      <button class="mtab on" id="tab-info" onclick="swTab('info')">Profile</button>
+      <button class="mtab" id="tab-spec" onclick="swTab('spec')">Specialties</button>
+      <button class="mtab" id="tab-avail" onclick="swTab('avail')">Availability</button>
+    </div>
+    <div class="mbody" id="fm-body"></div>
+    <div class="mftr"><button class="btn btn-out" onclick="closeForm()">Cancel</button><button class="btn btn-pri" onclick="saveForm()">Save</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="conf-modal">
+  <div class="conf-card"><h3 id="cf-ttl">Remove?</h3><p id="cf-body"></p><div class="conf-act"><button class="btn btn-out" onclick="closeConf()">Cancel</button><button class="btn btn-dan" id="cf-ok">Remove</button></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SEED=[{"id":"c1","name":"Jennifer Whetstone","cred":"LMFT","license":"LMFT 53763","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Couples"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","Brief Strategic","CBT","DBT","Family Systems","Motivational Interviewing","SFBT"],"specialties":["Anger and Irritability","Anxiety","Attachment Issues","Depression","Family of Origin Issues","LGBTQ","Mindfulness","Mood Disorders","Relationship Issues","Self-Esteem","Self-Harm","Separation / Divorce","Stress Management","Trauma","Veterans / Military"],"notes":"Founder. High-achieving individuals, boundary work. Trauma-informed.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/jenniferwhetstone","availability":{},"slots":[],"officeByDay":{}},{"id":"c2","name":"Dr. Tania Hormozi","cred":"LMFT","license":"LMFT 100354","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Clairemont","Eastlake"],"populations":["Young Adults (18-24)","Adults (24+)","Elderly / Retired (65+)","Couples","Families"],"languages":["English","Farsi"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Family Systems","SFBT"],"specialties":["Alcohol / Substance Use","Anxiety","Attachment Issues","Behavioral Issues","Immigration / 1st Gen","Multicultural Issues","Parenting","Self-Esteem","Self-Harm","Separation / Divorce","Stress Management","Trauma","Veterans / Military"],"notes":"Schedule 1st appt as telehealth. Does NOT work with transgender clients. Families OK if 12+. Max 6 intakes/day. 3-4/w...","intakeLimit":{"day":6,"week":4},"profileUrl":"https://www.hopetherapygroup.com/teams/tania-hormozi","availability":{"Monday":["Morning","Afternoon","Evening"],"Tuesday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"]},"slots":[],"officeByDay":{"Monday":"Telehealth","Tuesday":"Eastlake","Wednesday":"Telehealth","Thursday":"Eastlake"}},{"id":"c3","name":"Amy Cortez","cred":"LCSW","license":"LCSW 118313","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Eastlake","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples"],"languages":["English"],"emdr":false,"kaiser":true,"champva":true,"modalities":["Attachment-Based","CBT","DBT","EMDR","EFT","Narrative Therapy","Person-Centered","SFBT"],"specialties":["Adoption","Aging and Phase of Life","Alcohol / Substance Use","Anger and Irritability","Anxiety","Attachment Issues","Caregiver Stress","Chronic Pain / Health Issues","Depression","Family of Origin Issues","Grief and Loss","Infertility","LGBTQ","Personality","Perinatal / Postpartum","Self-Esteem","Self-Harm","Separation / Divorce","Suicidal Ideation","Veterans / Military"],"notes":"Clinical Supervisor. Kaiser in-network and CHAMPVA.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/amy-cortez","availability":{},"slots":[],"officeByDay":{}},{"id":"c4","name":"Anastasia Steel","cred":"ACSW","license":"ACSW 128845","lictype":"Associate","supervisor":"Dr. Tania Hormozi","status":"Accepting","locations":["Eastlake","Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Families","Couples","Children (10-13)","Teens (16-18)"],"languages":["English","Russian","Belarusian","German"],"emdr":true,"kaiser":false,"champva":false,"modalities":["EMDR","CBT","DBT","Somatic","ACT","EFT","Motivational Interviewing","IFS","Yoga Therapy"],"specialties":["Anxiety","Attachment Issues","Behavioral Issues","Cultural Trauma","Depression","Family of Origin Issues","Immigration / 1st Gen","Multicultural Issues","PTSD","Trauma","Bipolar Disorder","Borderline Personality Disorder","Social Anxiety","Psychosis","Schizophrenia","OCD","DID","Sexual Assault","Self-Harm","Domestic Violence","Suicidal Ideation","Complex Trauma","Addiction","Alcohol / Substance Use","Substance Use Issues","Premarital Counseling","Marital Counseling","Infidelity","High Conflict Divorces","Relationship Issues","Separation / Divorce","Relationship Anxiety","LGBTQ","Identity Exploration","Veterans / Military","Aging and Phase of Life","BIPOC Issues","ADHD","Autism Spectrum Disorder","School Issues","Perps / Sex Offenders","Court-Ordered Cases","Adjustment and Life Issues","Anger and Irritability","Mindfulness","Self-Esteem","Stress Management","Life Transitions","Burnout","Grief and Loss","Sexual Dysfunction","Chronic Pain / Health Issues","Perinatal / Postpartum"],"notes":"EMDR trained. Multilingual: English, Russian, Belarusian, German","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/anastasia-steel","availability":{"Tuesday":["Morning","Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"],"Saturday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Tuesday":"Eastlake","Thursday":"Telehealth","Saturday":"Telehealth"}},{"id":"c5","name":"Andrew Listvinsky","cred":"LCSW","license":"LCSW 114861","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Eastlake","Clairemont","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Couples","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Motivational Interviewing","SFBT","MBSR"],"specialties":["Addiction","Alcohol / Substance Use","Anger and Irritability","Anxiety","ADHD","Behavioral Issues","Depression","Men's Issues","Relationship Issues","Substance Use Issues","Trauma"],"notes":"Clinical Supervisor. Currently pausing intakes.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/andrewlistvinsky","availability":{},"slots":[],"officeByDay":{}},{"id":"c6","name":"Anna Hunnicutt","cred":"LMFT","license":"LMFT 47493","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Telehealth"],"populations":["Adults (24+)","Adults (55+)","Young Adults (18-24)"],"languages":["English"],"emdr":false,"kaiser":true,"champva":true,"modalities":["Integrative / Holistic Psychotherapy","Solution Focused Brief Therapy (SFBT)"],"specialties":["Adjustment and Life Issues","Anxiety","Chronic Pain / Health Issues","Depression","Eating Disorders","Holistic / Integrative Focus","Identity Exploration","LGBTQ","Life Transitions","Nutrition and Mental Health","Perinatal / Postpartum","Veterans / Military","Women's Issues","Medical Trauma","Poly Relationships","Separation / Divorce","Relationship Issues","Relationship Anxiety","Multicultural Issues","Aging and Phase of Life","Infertility","Sexual Dysfunction","Anger and Irritability","Grief and Loss","Self-Esteem","Self Compassion","Mindfulness","Stress Management"],"notes":"Enjoys working with: Chronic illness, medical trauma, LGBTQIA+, identity, women's issues, veterans/military and adjustments to life, phases/stages of adulthood, relationship challenges","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/annahunnicutt","availability":{"Monday":["Morning","Afternoon"],"Tuesday":["Morning","Afternoon"],"Wednesday":["Morning","Afternoon"],"Thursday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Telehealth","Tuesday":"Telehealth","Wednesday":"Telehealth","Thursday":"Telehealth"}},{"id":"c7","name":"Averee Karras","cred":"AMFT","license":"AMFT 160382","lictype":"Associate","supervisor":"Dr. Tania Hormozi","status":"Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Children (10-13)","Children (5-12)","Teens (16-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","ACT","DBT","Family Systems","IFS","Motivational Interviewing","Narrative Therapy","Play Therapy","Sand Tray","Solution Focused Brief Therapy (SFBT)"],"specialties":["Anxiety","Attachment Issues","Depression","Life Transitions","Self-Esteem","Stress Management","Trauma","Separation / Divorce","Relationship Issues","Relationship Anxiety","Anger and Irritability","Mindfulness","Personality","Social Anxiety","PTSD","ADHD","Autism Spectrum Disorder","Adoption","Behavioral Issues","ODD","School Issues","Body Dysmorphia","Body Image Concerns","Body Positivity","Chronic Pain / Health Issues","Eating Disorders","Infertility","Sexual Dysfunction","Blended Families","Burnout","Caregiver Stress","Caregivers","Grief and Loss","Women's Issues","Men's Issues","Veterans / Military","High-Achieving Individuals","Multicultural Issues","LGBTQ","Adjustment and Life Issues","Alcohol / Substance Use","Substance Use Issues","Bipolar Disorder","Borderline Personality Disorder","Psychosis","Schizophrenia","Suicidal Ideation","Self-Harm","Sexual Assault","DID","Court-Ordered Cases","Narcissistic Personality Disorder"],"notes":"Youngest age for telehealth: 9 \nLoves working w/ career, life transitions, anger, family transitions \n","intakeLimit":{"day":3,"week":10},"profileUrl":"https://www.hopetherapygroup.com/teams/averee-karras","availability":{"Monday":["Morning","Afternoon","Evening"],"Tuesday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"],"Friday":["Morning"]},"slots":[],"officeByDay":{"Monday":"Telehealth","Tuesday":"Eastlake","Wednesday":"Eastlake","Thursday":"Clairemont","Friday":"Telehealth"}},{"id":"c8","name":"Brian Shin","cred":"LMFT","license":"LMFT 102882","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Los Angeles","Telehealth"],"populations":["Adults (24+)","Adults (55+)"],"languages":["English","Korean"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","EFT","Gottman Method","MBSR","SFBT","Person-Centered"],"specialties":["Anxiety","Depression","Life Transitions","Men's Issues","Multicultural Issues","PTSD","Relationship Issues","Stress Management","Trauma","Veterans / Military"],"notes":"Clinical Supervisor. Sherman Oaks / LA and telehealth.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/brianshin","availability":{"Monday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Los Angeles","Wednesday":"Los Angeles","Friday":"Telehealth"}},{"id":"c9","name":"Bryanna Cazares","cred":"LMFT","license":"LMFT 161272","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Families","Children (10-13)","Teens (16-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Narrative Therapy","Play Therapy","Sand Tray","Solution Focused Brief Therapy (SFBT)","Art Therapy","Person-Centered"],"specialties":["Anxiety","Behavioral Issues","Depression","Identity Exploration","LGBTQ","Life Transitions","Multicultural Issues","Relationship Issues","Self-Esteem","Trauma","Social Anxiety","Personality","Anger and Irritability","Attachment Issues","Immigration / 1st Gen","Mindfulness","Stress Management","Adoption","ADHD","Autism Spectrum Disorder","School Issues","ODD","Self-Harm","OCD","PTSD","Grief and Loss","Infidelity","Separation / Divorce","Suicidal Ideation","Self Compassion","Court-Ordered Cases","Adjustment and Life Issues","Foster / Adoption Youth and Families","Sexual Assault","Relationship Anxiety","Bullying"],"notes":"Only 3 intakes per week.","intakeLimit":{"day":0,"week":3},"profileUrl":"https://www.hopetherapygroup.com/teams/bryannacazares","availability":{"Monday":["Morning","Afternoon","Evening"],"Tuesday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"]},"slots":[],"officeByDay":{"Monday":"Telehealth","Tuesday":"Telehealth","Wednesday":"Telehealth","Thursday":"Telehealth"}},{"id":"c10","name":"Cindy Way","cred":"LMFT","license":"LMFT 149923","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Eastlake","Telehealth"],"populations":["Teens (13-18)","Teens (16-18)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples"],"languages":["English","Tagalog"],"emdr":true,"kaiser":false,"champva":false,"modalities":["EMDR","CBT","DBT","TF-CBT","Motivational Interviewing","Person-Centered"],"specialties":["ADHD","Anxiety","Behavioral Issues","Depression","Life Transitions","PTSD","Trauma","Relationship Issues"],"notes":"EMDR trained. Eastlake site supervisor. Only 13+ and couples. Accepting 15-min phone consults.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/cindyway","availability":{"Monday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Eastlake","Wednesday":"Eastlake","Friday":"Telehealth"}},{"id":"c11","name":"Courtney Packard","cred":"APCC","license":"APCC 17717","lictype":"Associate","supervisor":"Brian Shin","status":"Not Accepting","locations":["Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Couples"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","DBT","MBSR","Person-Centered","SFBT"],"specialties":["Anxiety","Depression","Life Transitions","Relationship Issues","Self-Esteem","Trauma"],"notes":"Telehealth only.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/courtney-packard","availability":{"Wednesday":["Morning","Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Wednesday":"Telehealth","Thursday":"Telehealth","Friday":"Telehealth"}},{"id":"c12","name":"Dani Orloff","cred":"LMFT","license":"LMFT 158648","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Los Angeles","Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Families","Children (10-13)","Teens (16-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Family Systems","Narrative Therapy","Solution Focused Brief Therapy (SFBT)"],"specialties":["Anxiety","Depression","Identity Exploration","LGBTQ","Life Transitions","Poly Relationships","Relationship Issues","Trauma","ADHD","Autism Spectrum Disorder","PTSD","Grief and Loss","Self-Esteem","Mindfulness","Multicultural Issues","Caregivers","Caregiver Stress","Stress Management","Adjustment and Life Issues","Infidelity","Relationship Anxiety","Separation / Divorce","Court-Ordered Cases"],"notes":"Sherman Oaks / LA and telehealth.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/dani-orloff","availability":{"Tuesday":["Afternoon"],"Wednesday":["Afternoon"],"Thursday":["Afternoon"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Tuesday":"Los Angeles","Wednesday":"Los Angeles","Thursday":"Los Angeles","Friday":"Telehealth"}},{"id":"c13","name":"Debra Sharon","cred":"PSY / LMFT","license":"PSY 8908 / LMFT 16060","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Psychodynamic","MBSR","Person-Centered"],"specialties":["Aging and Phase of Life","Anxiety","Chronic Pain / Health Issues","Depression","Grief and Loss","Life Transitions","Relationship Issues","Trauma"],"notes":"Clinical Supervisor.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/debra-sharon","availability":{},"slots":[],"officeByDay":{}},{"id":"c14","name":"Dominique Giambalvo","cred":"APCC","license":"APCC 17644","lictype":"Associate","supervisor":"Jessica Zee","status":"Accepting","locations":["Eastlake","Rancho Bernardo","Telehealth"],"populations":["Adults (24+)","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["Art Therapy","CBT","Sand Tray","Play Therapy","EFT","DBT","Solution Focused Brief Therapy (SFBT)"],"specialties":["Anxiety","Depression","Family of Origin Issues","Life Transitions","Relationship Issues","Trauma","OCD","Social Anxiety","Borderline Personality Disorder","Bipolar Disorder","Schizophrenia","Psychosis","PTSD","Attachment Issues","Co-Parenting","Parenting","Family of Adults with Special Needs","LGBTQ","Immigration / 1st Gen","Identity Exploration","ADHD","Autism Spectrum Disorder","Behavioral Issues","ODD","Body Dysmorphia","Body Image Concerns","Eating Disorders","Stress Management","Self-Esteem","Caregiver Stress","Caregivers","Grief and Loss","Court-Ordered Cases","Infidelity","Personality","High Conflict Divorces","School Issues"],"notes":"Eastlake: Mon biweekly 12pm in-person. Virtual: Fri 1pm and 3pm biweekly. \nPause on court-ordered. No kids currently.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/dominique-giambalvo","availability":{"Monday":["Afternoon"],"Friday":["Afternoon"]},"slots":[],"officeByDay":{"Monday":"Eastlake","Friday":"Telehealth"}},{"id":"c15","name":"Dylan Loftis","cred":"AMFT","license":"AMFT 137172","lictype":"Associate","supervisor":"Mariana Brunnett-Lazarte","status":"Accepting","locations":["Rancho Bernardo","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Couples","Families","Teens (16-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Solution Focused Brief Therapy (SFBT)","Motivational Interviewing"],"specialties":["Anxiety","Depression","Life Transitions","Relationship Issues","Separation / Divorce","Trauma","Social Anxiety","PTSD","Self-Harm","Attachment Issues","Premarital Counseling","Parenting","Family of Adults with Special Needs","Relationship Anxiety","LGBTQ","Identity Exploration","Disabilities","Behavioral Issues","Autism Spectrum Disorder","ADHD","Learning Disabilities","ODD","School Issues","Chronic Pain / Health Issues","Perinatal / Postpartum","Infertility","Anger and Irritability","Women's Issues","Mindfulness","Multicultural Issues","Self-Esteem","Grief and Loss","Caregivers","Caregiver Stress","Stress Management"],"notes":"Tuesdays: 2pm telehealth/RB \nNo under 14. Couples/Families OK in-person.\nWilling to see 11/12+","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/dylanloftis","availability":{"Tuesday":["Afternoon"]},"slots":[],"officeByDay":{"Tuesday":"Rancho Bernardo"}},{"id":"c16","name":"Edith Alvarez","cred":"AMFT","license":"AMFT 151928","lictype":"Associate","supervisor":"Amy Cortez","status":"Not Accepting","locations":["Eastlake","Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Families"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Person-Centered","TF-CBT","SFBT"],"specialties":["Anxiety","Behavioral Issues","Cultural Trauma","Depression","Immigration / 1st Gen","Life Transitions","Multicultural Issues","Parenting","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/edith-alvarez","availability":{},"slots":[],"officeByDay":{}},{"id":"c17","name":"Elyssa Becerra","cred":"AMFT","license":"AMFT 150109","lictype":"Associate","supervisor":"Mariana Brunnett-Lazarte","status":"Accepting","locations":["Rancho Bernardo","Telehealth"],"populations":["Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples","Families","Young Adults (18-24)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","EFT","Narrative Therapy","DBT","Family Systems","Motivational Interviewing","Gottman Method","IFS","Somatic"],"specialties":["Anxiety","Depression","Life Transitions","Relationship Issues","Trauma","Women's Issues","Medical Trauma","PTSD","ADHD","Autism Spectrum Disorder","OCD","Psychosis","Schizophrenia","Social Anxiety","Borderline Personality Disorder","Bipolar Disorder","Mood Disorders","Premarital Counseling","Parenting","Co-Parenting","Attachment Issues","Separation / Divorce","Relationship Anxiety","Marital Counseling","Infidelity","Immigration / 1st Gen","Multicultural Issues","Identity Exploration","LGBTQ","Family of Origin Issues","Adjustment and Life Issues","Stress Management","Mindfulness","Caregiver Stress","Caregivers","Grief and Loss","Anger and Irritability","Eating Disorders","Chronic Pain / Health Issues","Body Image Concerns","Body Dysmorphia","Body Positivity","Holistic / Integrative Focus","School Issues","Sexual Dysfunction"],"notes":"WARNING: ALL intakes virtual unless other in-person appts scheduled that day. 18+ only.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/elyssa-becerra","availability":{"Monday":["Afternoon","Evening"],"Wednesday":["Morning"],"Thursday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Rancho Bernardo","Wednesday":"Rancho Bernardo","Thursday":"Telehealth"}},{"id":"c18","name":"Erika Rogers","cred":"AMFT / APCC","license":"AMFT 145348 / APCC 15929","lictype":"Associate","supervisor":"Brian Shin","status":"Accepting","locations":["Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Couples"],"languages":["English"],"emdr":true,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Narrative Therapy","EMDR","Motivational Interviewing"],"specialties":["Anxiety","Depression","Life Transitions","Relationship Issues","Self-Esteem","Trauma","Attachment Issues","Complex Trauma","PTSD","Perfectionism","OCD","Body Dysmorphia","Body Image Concerns","Body Positivity","Eating Disorders","Adjustment and Life Issues","High-Achieving Individuals","Burnout","Mindfulness","Stress Management"],"notes":"Telehealth only.\nOnly 6 clients per day on calendar\nAvailability on Mondays and Fridays","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/erika-rogers","availability":{"Tuesday":["Afternoon","Evening"],"Wednesday":["Afternoon","Evening"],"Thursday":["Afternoon","Evening"]},"slots":[],"officeByDay":{"Tuesday":"Telehealth","Wednesday":"Telehealth","Thursday":"Telehealth"}},{"id":"c19","name":"Glaucia Martin-Porath","cred":"AMFT","license":"AMFT 149179","lictype":"Associate","supervisor":"Elana Lesse","status":"Not Accepting","locations":["Clairemont","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples","Families"],"languages":["English","Portuguese"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","Family Systems","MBSR","Narrative Therapy","Person-Centered"],"specialties":["Anxiety","Cultural Trauma","Depression","Life Transitions","Multicultural Issues","Relationship Issues","Trauma"],"notes":"Ages 13+ for now. Max 3 intakes/day with 30 min between. Urgent: 619-800-0423.","intakeLimit":{"day":3,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/glaucia-martin-porath","availability":{"Monday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Clairemont","Wednesday":"Telehealth","Friday":"Clairemont"}},{"id":"c20","name":"Halleh Akhbari","cred":"AMFT","license":"AMFT 156442","lictype":"Associate","supervisor":"Jennifer Whetstone","status":"Accepting","locations":["Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Couples","Children (10-13)","Teens (16-18)"],"languages":["English","Farsi"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","EFT","Gottman Method","Narrative Therapy","Motivational Interviewing","Positive Psychology"],"specialties":["Anxiety","Depression","Immigration / 1st Gen","Life Transitions","Multicultural Issues","Relationship Issues","Trauma","PTSD","Anger and Irritability","Adjustment and Life Issues","Attachment Issues","Premarital Counseling","Relationship Anxiety","Infertility","Women's Issues","Stress Management","Career Related Issues","Sports-Related Issues","High-Achieving Individuals","Burnout","Caregiver Stress","Caregivers","Grief and Loss","Mindfulness","Self-Esteem","Autism Spectrum Disorder","Behavioral Issues","ODD","Foster / Adoption Youth and Families","Blended Families","Separation / Divorce","Infidelity","Parenting","Narcissistic Personality Disorder","Perinatal / Postpartum","Men's Issues","Body Image Concerns","Suicidal Ideation","Domestic Violence","Sexual Assault","Self-Harm","LGBTQ","Veterans / Military","Social Anxiety","School Issues","Speech Impediments"],"notes":"Couples: low-conflict/communication only. Sees 8+. Max 1-2 intakes/day, 3-4/week.","intakeLimit":{"day":2,"week":4},"profileUrl":"https://www.hopetherapygroup.com/teams/halleh-akhbari","availability":{"Monday":["Morning","Afternoon"],"Tuesday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Telehealth","Tuesday":"Telehealth","Wednesday":"Telehealth","Friday":"Telehealth"}},{"id":"c21","name":"Jessica Zee","cred":"LMFT","license":"LMFT 142706","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (16-18)","Couples"],"languages":["English"],"emdr":true,"kaiser":false,"champva":false,"modalities":["Attachment-Based","CBT","EMDR","EFT","MBSR","Person-Centered"],"specialties":["Anxiety","Attachment Issues","Depression","Infertility","LGBTQ","Perinatal / Postpartum","PTSD","Relationship Issues","Trauma","Women's Issues"],"notes":"Clinical Supervisor. EMDR trained.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/jessicazee","availability":{},"slots":[],"officeByDay":{}},{"id":"c22","name":"Julianne Bigler","cred":"AMFT","license":"AMFT 151998","lictype":"Associate","supervisor":"Kira Milas","status":"Accepting","locations":["Clairemont"],"populations":["Children (5-12)","Teens (13-18)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Children (4-8)","Children (3+)","Children (10-13)","Teens (16-18)","Young Adults (18-24)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","MBSR","SFBT","DBT","Family Systems","Motivational Interviewing","Narrative Therapy","Sand Tray","Play Therapy","Solution Focused Brief Therapy (SFBT)"],"specialties":["Anxiety","Depression","Life Transitions","Relationship Issues","Self-Esteem","Stress Management"],"notes":"No same-day intakes. No court-ordered. NO couples or families. Max 2/day, 4/week. Notify Fridays if Monday appts added.","intakeLimit":{"day":2,"week":4},"profileUrl":"https://www.hopetherapygroup.com/teams/julianne-bigler","availability":{"Tuesday":["Morning","Afternoon","Evening"],"Thursday":["Afternoon","Evening"]},"slots":[],"officeByDay":{"Tuesday":"Clairemont","Thursday":"Clairemont"}},{"id":"c23","name":"Kaylene Woo","cred":"AMFT","license":"AMFT 151244","lictype":"Associate","supervisor":"Brian Shin","status":"Accepting","locations":["Los Angeles","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","MBSR","Person-Centered"],"specialties":["Anxiety","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"Only accepting clients who specifically requested her. Otherwise pause on intakes.","intakeLimit":{"day":1,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/kaylene-woo","availability":{"Monday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"]},"slots":[],"officeByDay":{"Monday":"Los Angeles","Wednesday":"Telehealth"}},{"id":"c24","name":"Kira Milas","cred":"LMFT","license":"LMFT 137654","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Eastlake","Clairemont","Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)"],"languages":["English"],"emdr":true,"kaiser":false,"champva":false,"modalities":["ACT","CBT","DBT","EMDR","IFS","MBSR","Somatic"],"specialties":["Anxiety","Body Image Concerns","Depression","Eating Disorders","Grief and Loss","Life Transitions","Perinatal / Postpartum","PTSD","Self-Esteem","Trauma"],"notes":"Clinical Supervisor. EMDR trained. Currently not accepting.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/kira-milas","availability":{},"slots":[],"officeByDay":{}},{"id":"c25","name":"Kristen Garcia","cred":"LMFT","license":"LMFT 121285","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Telehealth"],"populations":["Adults (24+)","Adults (55+)","Elderly / Retired (65+)"],"languages":["English"],"emdr":true,"kaiser":true,"champva":false,"modalities":["ACT","CBT","EMDR","EFT","MBSR"],"specialties":["Aging and Phase of Life","Anxiety","Depression","Grief and Loss","Life Transitions","Perinatal / Postpartum","Trauma","Women's Issues"],"notes":"Telehealth only.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/kristengarcia","availability":{"Monday":["Morning","Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"]},"slots":[],"officeByDay":{"Monday":"Telehealth","Thursday":"Telehealth"}},{"id":"c26","name":"Kylie Sreden","cred":"AMFT / APCC","license":"AMFT 151450 / APCC 18217","lictype":"Associate","supervisor":"Andrew Listvinsky","status":"Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Children (3+)","Children (5-12)","Teens (13-18)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Families"],"languages":["English"],"emdr":true,"kaiser":false,"champva":false,"modalities":["Attachment-Based","CPP","CBT","EMDR","MBSR","TF-CBT"],"specialties":["Anxiety","Attachment Issues","Behavioral Issues","Depression","Family of Origin Issues","PTSD","Trauma"],"notes":"EMDR trained. Sees as young as 3+. Clairemont/telehealth only. Biweekly: Thu 12pm, Fri 9am.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/kylie-sreden","availability":{"Monday":["Afternoon"],"Tuesday":["Afternoon"],"Thursday":["Afternoon"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Clairemont","Tuesday":"Clairemont","Thursday":"Telehealth","Friday":"Clairemont"}},{"id":"c27","name":"Lily Shepherd","cred":"APCC","license":"APCC 16186","lictype":"Associate","supervisor":"Amy Cortez","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","MBSR","Person-Centered","Strength-Based"],"specialties":["Anxiety","Behavioral Issues","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"Open to intakes Monday at Clairemont office.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/lily-shepherd","availability":{"Monday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Clairemont","Wednesday":"Telehealth"}},{"id":"c28","name":"Mariana Brunnett-Lazarte","cred":"LMFT","license":"LMFT 111158","lictype":"Licensed","supervisor":"","status":"Not Accepting","locations":["Rancho Bernardo","Telehealth"],"populations":["Adults (24+)"],"languages":["English","Spanish","Portuguese"],"emdr":true,"kaiser":false,"champva":false,"modalities":["Attachment-Based","CBT","EMDR","EFT","Family Systems","TF-CBT"],"specialties":["Anxiety","Cultural Trauma","Depression","Family of Origin Issues","Immigration / 1st Gen","Multicultural Issues","Parenting","PTSD","Trauma"],"notes":"Clinical Supervisor. EMDR trained. Currently not accepting.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/mariana-brunnett-lazarte","availability":{},"slots":[],"officeByDay":{}},{"id":"c29","name":"Megan Gafford","cred":"AMFT","license":"AMFT 152707","lictype":"Associate","supervisor":"Mariana Brunnett-Lazarte","status":"Not Accepting","locations":["Eastlake","Clairemont","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Family Systems","Person-Centered","Strength-Based","TF-CBT"],"specialties":["Anxiety","Behavioral Issues","Depression","Family of Origin Issues","Life Transitions","Trauma"],"notes":"Sees 10+. Max 2 intakes/day, 10/week.","intakeLimit":{"day":2,"week":10},"profileUrl":"https://www.hopetherapygroup.com/teams/megan-gafford","availability":{"Tuesday":["Morning","Afternoon"],"Wednesday":["Morning"],"Thursday":["Afternoon"]},"slots":[],"officeByDay":{"Tuesday":"Eastlake","Wednesday":"Clairemont","Thursday":"Eastlake"}},{"id":"c30","name":"Neqina Rodriguez","cred":"ACSW","license":"ACSW 116092","lictype":"Associate","supervisor":"Kira Milas","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (24+)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Narrative Therapy","Person-Centered","Strength-Based"],"specialties":["Anxiety","Behavioral Issues","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"Accepting 3-5 intakes. Ages 10+. No court-ordered. Does NOT see siblings.","intakeLimit":{"day":0,"week":5},"profileUrl":"https://www.hopetherapygroup.com/teams/neqina-rodriguez","availability":{"Monday":["Morning","Afternoon"],"Tuesday":["Afternoon"],"Wednesday":["Afternoon","Evening"]},"slots":[],"officeByDay":{"Monday":"Clairemont","Tuesday":"Clairemont","Wednesday":"Telehealth"}},{"id":"c31","name":"Nick Salcedo","cred":"AMFT / APCC","license":"AMFT 142420 / APCC 14973","lictype":"Associate","supervisor":"Kira Milas","status":"Accepting","locations":["Clairemont","Rancho Bernardo","Telehealth"],"populations":["Children (5-12)","Teens (13-18)","Young Adults (18-24)","Adults (55+)","Elderly / Retired (65+)","Couples"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Motivational Interviewing","Person-Centered","SFBT","Strength-Based"],"specialties":["Adjustment and Life Issues","Anger and Irritability","Anxiety","ADHD","Behavioral Issues","Depression","Life Transitions","Self-Esteem"],"notes":"NOT accepting: families, adults 26-54, conduct disorders, addiction, trauma-related, court-mandated.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/nick-salcedo","availability":{"Tuesday":["Afternoon","Evening"],"Wednesday":["Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"]},"slots":[],"officeByDay":{"Tuesday":"Clairemont","Wednesday":"Clairemont","Thursday":"Rancho Bernardo"}},{"id":"c32","name":"Nicole Cartan","cred":"APCC","license":"APCC 20862","lictype":"Associate","supervisor":"Mariana Brunnett-Lazarte","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)"],"languages":["English"],"emdr":true,"kaiser":false,"champva":false,"modalities":["ACT","CBT","DBT","EMDR","IFS","Narrative Therapy","Person-Centered"],"specialties":["Anxiety","Depression","Identity Exploration","LGBTQ","Life Transitions","PTSD","Self-Harm","Suicidal Ideation","Trauma"],"notes":"EMDR trained. Sees 12+ only. Prefers 12-25. Max 2 intakes/day, 5/week.","intakeLimit":{"day":2,"week":5},"profileUrl":"https://www.hopetherapygroup.com/teams/nicole-cartan","availability":{"Tuesday":["Morning","Afternoon","Evening"],"Thursday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Tuesday":"Clairemont","Thursday":"Telehealth","Friday":"Clairemont"}},{"id":"c33","name":"Patrick Duffner","cred":"AMFT","license":"AMFT 151379","lictype":"Associate","supervisor":"Andrew Listvinsky","status":"Accepting","locations":["Eastlake","Rancho Bernardo","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Families","Couples"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","Motivational Interviewing","Narrative Therapy","Person-Centered","SFBT"],"specialties":["Anxiety","Depression","Life Transitions","Men's Issues","Relationship Issues","Trauma"],"notes":"Sees 12+","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/patrick-duffner","availability":{"Wednesday":["Evening"],"Friday":["Morning"]},"slots":[],"officeByDay":{"Wednesday":"Eastlake","Friday":"Rancho Bernardo"}},{"id":"c34","name":"Piyola Derbarseghian","cred":"AMFT","license":"AMFT 144657","lictype":"Associate","supervisor":"Brian Shin","status":"Accepting","locations":["Telehealth"],"populations":["Adults (24+)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","MBSR","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Life Transitions","Self-Esteem","Stress Management"],"notes":"Adults only at this time.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/piyola-derbarseghian","availability":{"Tuesday":["Afternoon","Evening"],"Wednesday":["Afternoon","Evening"],"Thursday":["Afternoon","Evening"]},"slots":[],"officeByDay":{"Tuesday":"Telehealth","Wednesday":"Telehealth","Thursday":"Telehealth"}},{"id":"c35","name":"Rachel Diskin","cred":"LCSW","license":"LCSW 74358","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)"],"languages":["English"],"emdr":false,"kaiser":true,"champva":true,"modalities":["CBT","MBCT","Motivational Interviewing","Narrative Therapy","Person-Centered","Psychodynamic","SFBT"],"specialties":["Aging and Phase of Life","Anxiety","Caregiver Stress","Depression","Grief and Loss","Life Transitions","Relationship Issues","Stress Management","Trauma"],"notes":"Kaiser in-network and CHAMPVA. Kaiser age 18-45. Wants more Active Duty and Families.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/racheldiskin","availability":{"Tuesday":["Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Thursday":["Evening"]},"slots":[],"officeByDay":{"Tuesday":"Clairemont","Wednesday":"Clairemont","Thursday":"Clairemont"}},{"id":"c36","name":"Rachel Kirchhofer","cred":"ACSW","license":"ACSW 125929","lictype":"Associate","supervisor":"Kira Milas","status":"Not Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","MBSR","Narrative Therapy","Person-Centered","SFBT"],"specialties":["Anxiety","Depression","Grief and Loss","Life Transitions","Self-Esteem","Trauma"],"notes":"Max 1 intake per day. Accepting telehealth intakes.","intakeLimit":{"day":1,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/rachel-kirchhofer","availability":{"Monday":["Morning","Afternoon","Evening"],"Tuesday":["Morning","Afternoon"],"Thursday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Eastlake","Tuesday":"Clairemont","Thursday":"Telehealth"}},{"id":"c37","name":"Robin Gutschow","cred":"AMFT","license":"AMFT 143743","lictype":"Associate","supervisor":"Amy Cortez","status":"Accepting","locations":["Rancho Bernardo","Telehealth"],"populations":["Adults (24+)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["Attachment-Based","CBT","MBSR","Person-Centered","Somatic"],"specialties":["Anxiety","Depression","Infertility","Perinatal / Postpartum","Women's Issues"],"notes":"ONLY accepting: moms, perinatal care, and postpartum support clients.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/robin-gutschow","availability":{"Tuesday":["Morning","Afternoon"],"Thursday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Tuesday":"Rancho Bernardo","Thursday":"Telehealth"}},{"id":"c38","name":"Rooky Hayman","cred":"AMFT","license":"AMFT 140593","lictype":"Associate","supervisor":"Brian Shin","status":"Not Accepting","locations":["Telehealth"],"populations":["Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples"],"languages":["English"],"emdr":true,"kaiser":false,"champva":false,"modalities":["Attachment-Based","CBT","EMDR","EFT","Gottman Method","Psychodynamic"],"specialties":["Anxiety","Depression","PTSD","Relationship Issues","Trauma"],"notes":"EMDR trained. Telehealth only.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/rooky-hayman","availability":{"Tuesday":["Afternoon","Evening"],"Wednesday":["Afternoon","Evening"],"Thursday":["Afternoon","Evening"]},"slots":[],"officeByDay":{"Tuesday":"Telehealth","Wednesday":"Telehealth","Thursday":"Telehealth"}},{"id":"c39","name":"Shayna Bergenfeld","cred":"AMFT","license":"AMFT 155015","lictype":"Associate","supervisor":"Brian Shin","status":"Accepting","locations":["Los Angeles","Telehealth"],"populations":["Teens (13-18)","Young Adults (18-24)","Adults (24+)","Couples","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","DBT","Family Systems","Person-Centered","TF-CBT"],"specialties":["Anxiety","Behavioral Issues","Depression","Life Transitions","Relationship Issues","Self-Harm","Trauma"],"notes":"Prefers under 30, wants more teens. In-person for teens/families. Max 3 intakes/day, 15/week.","intakeLimit":{"day":3,"week":15},"profileUrl":"https://www.hopetherapygroup.com/teams/shayna-bergenfeld","availability":{"Monday":["Morning","Afternoon","Evening"],"Tuesday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Los Angeles","Tuesday":"Los Angeles","Wednesday":"Telehealth","Friday":"Los Angeles"}},{"id":"c40","name":"Susan Quillman","cred":"LCSW","license":"LCSW 23851","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Adults (55+)","Elderly / Retired (65+)"],"languages":["English"],"emdr":false,"kaiser":true,"champva":false,"modalities":["CBT","MBSR","Narrative Therapy","Person-Centered","Psychodynamic"],"specialties":["Anxiety","Depression","Grief and Loss","Life Transitions","Relationship Issues","Self-Esteem","Stress Management"],"notes":"Kaiser in-network. Prefers break between back-to-back clients. NOT adolescents or kids.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/susanquillman","availability":{"Monday":["Morning","Afternoon"],"Wednesday":["Morning","Afternoon"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Clairemont","Wednesday":"Telehealth","Friday":"Clairemont"}},{"id":"c41","name":"Victoria Luna","cred":"AMFT","license":"AMFT 154390","lictype":"Associate","supervisor":"Jennifer Whetstone","status":"Accepting","locations":["Telehealth"],"populations":["Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples","Families"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","Family Systems","Narrative Therapy","Person-Centered","Strength-Based"],"specialties":["Anxiety","Cultural Trauma","Depression","Immigration / 1st Gen","Life Transitions","Multicultural Issues","Relationship Issues","Trauma","Women's Issues"],"notes":"Can schedule telehealth on non-telehealth days. Max 1 intake/day, 5/week. Google Voice: 442-777-8609.","intakeLimit":{"day":1,"week":5},"profileUrl":"https://www.hopetherapygroup.com/teams/victoria-luna","availability":{"Monday":["Morning","Afternoon","Evening"],"Wednesday":["Morning","Afternoon","Evening"],"Friday":["Morning","Afternoon"]},"slots":[],"officeByDay":{"Monday":"Telehealth","Wednesday":"Telehealth","Friday":"Telehealth"}},{"name":"Alexandra Schultz","cred":"AMFT","license":"AMFT 135224","lictype":"Associate","supervisor":"Elana Lesse","status":"Not Accepting","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/alexandra-schultz","notes":"","locations":["Telehealth"],"populations":["Children (10-13)","Teens (13-18)","Teens (16-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["ACT","CBT","DBT","EFT","Gottman Method","Family Systems","IFS","Sand Tray","Play Therapy","Solution Focused Brief Therapy (SFBT)","Motivational Interviewing","Narrative Therapy"],"specialties":["Anxiety","Depression","ADHD","Autism Spectrum Disorder","Behavioral Issues","Disabilities","ODD","School Issues","Bipolar Disorder","Borderline Personality Disorder","Social Anxiety","Psychosis","Trauma","PTSD","Complex Trauma","Medical Trauma","Alcohol / Substance Use","Addiction","Substance Use Issues","Body Image Concerns","Body Positivity","Eating Disorders","Sexual Dysfunction","Self-Esteem","Adjustment and Life Issues","Anger and Irritability","Burnout","Caregiver Stress","Caregivers","Grief and Loss","Mindfulness","Men's Issues","Women's Issues","Life Transitions","Stress Management","High-Achieving Individuals","Body Dysmorphia","Chronic Pain / Health Issues","LGBTQ","Immigration / 1st Gen","Identity Exploration","Multicultural Issues","Veterans / Military","Aging and Phase of Life","Attachment Issues","Separation / Divorce","Parenting","Premarital Counseling","Poly Relationships","Relationship Anxiety","Marital Counseling","Infidelity","High Conflict Divorces","Relationship Issues","Self-Harm","Sexual Assault","Suicidal Ideation","Perps / Sex Offenders","Court-Ordered Cases"],"availability":{},"slots":[],"id":"c52","officeByDay":{}},{"id":"c42","name":"Elana Lesse","cred":"LPCC","license":"LPCC 12698","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","ACT","Person-Centered","Mindfulness-Based Stress Reduction (MBSR)"],"specialties":["Anxiety","Depression","Life Transitions","Stress Management","Trauma"],"notes":"Clinical Supervisor.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/elana-lesse","availability":{},"slots":[],"officeByDay":{}},{"id":"c43","name":"Isabela Romero","cred":"APCC","license":"APCC 17402","lictype":"Associate","supervisor":"Kira Milas","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Couples"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["Somatic","ACT","Attachment-Based","Person-Centered"],"specialties":["Anxiety","Attachment Issues","Life Transitions","Relationship Issues","Trauma","Women's Issues"],"notes":"Holistic/somatic approach. Works with high achievers, people-pleasers, and couples.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/isabela-romero","availability":{},"slots":[],"officeByDay":{}},{"id":"c44","name":"Ji Hyun Kim","cred":"LMFT","license":"LMFT 104776","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Couples","Families"],"languages":["English","Korean"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","EFT","Family Systems","Person-Centered"],"specialties":["Anxiety","Depression","Life Transitions","Multicultural Issues","Relationship Issues","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/ji-hyun-kim","availability":{},"slots":[],"officeByDay":{}},{"id":"c45","name":"Joncannon Eiden","cred":"LMFT","license":"LMFT 153791","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Psychodynamic","Motivational Interviewing","Person-Centered"],"specialties":["Addiction","Anxiety","Depression","Eating Disorders","Identity Exploration","LGBTQ","Trauma"],"notes":"Accepting clients.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/joncannon-eiden","availability":{},"slots":[],"officeByDay":{}},{"id":"c46","name":"Karlie Wong","cred":"AMFT","license":"AMFT 137582","lictype":"Associate","supervisor":"Jennifer Whetstone","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","ACT","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/karlie-wong","availability":{},"slots":[],"officeByDay":{}},{"id":"c47","name":"Tova Brown","cred":"AMFT","license":"AMFT 133390","lictype":"Associate","supervisor":"Kira Milas","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Couples","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Family Systems","Attachment-Based","Person-Centered"],"specialties":["Trauma","LGBTQ","Life Transitions","Parenting","Relationship Issues","Attachment Issues","Grief and Loss"],"notes":"Works with individuals, families, and couples including CNM relationships.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/tova-brown","availability":{},"slots":[],"officeByDay":{}},{"id":"c48","name":"Arianna Quinonez","cred":"AMFT","license":"AMFT 149012","lictype":"Associate","supervisor":"Amy Cortez","status":"Accepting","locations":["Los Angeles","Telehealth"],"populations":["Children (10-13)","Teens (13-18)","Young Adults (18-24)","Adults (24+)","Couples"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Person-Centered","Strength-Based","Motivational Interviewing"],"specialties":["Anxiety","BIPOC Issues","Depression","Grief and Loss","Immigration / 1st Gen","LGBTQ","Life Transitions","Multicultural Issues","Self-Esteem"],"notes":"Passionate about Latinx community and cultural accessibility.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/arianna-quinonez","availability":{},"slots":[],"officeByDay":{}},{"id":"c49","name":"Serat Rana","cred":"AMFT","license":"AMFT 147805","lictype":"Associate","supervisor":"Brian Shin","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Children (5-12)","Adults (24+)","Young Adults (18-24)","Couples"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Attachment-Based","Family Systems","Person-Centered"],"specialties":["Anxiety","Cultural Trauma","Depression","Grief and Loss","Identity Exploration","Immigration / 1st Gen","Life Transitions","Trauma","Veterans / Military"],"notes":"Works with POC, immigrants, military/veterans.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/serat-rana","availability":{},"slots":[],"officeByDay":{}},{"id":"c50","name":"Elizabeth \"Liz\" Kaye","cred":"LCSW","license":"LCSW","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Adults (55+)","Young Adults (18-24)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Psychodynamic","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Grief and Loss","Life Transitions","Relationship Issues","Self-Esteem","Stress Management"],"notes":"Gentle, strengths-focused approach.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/lizkaye","availability":{},"slots":[],"officeByDay":{}},{"id":"c51","name":"Lindsay Lien","cred":"LPCC","license":"LPCC","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Couples"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Play Therapy","SFBT","Motivational Interviewing"],"specialties":["Anxiety","Depression","Grief and Loss","Life Transitions","Relationship Issues","Self-Esteem","Stress Management"],"notes":"Background in community outpatient, school-based, and college counseling.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/lindsaylien","availability":{},"slots":[],"officeByDay":{}},{"id":"c53","name":"Ana-Lisa Bartelt","cred":"LMFT","license":"LMFT 104664","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Couples","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","EFT","Family Systems","Person-Centered"],"specialties":["Anxiety","Depression","Life Transitions","Relationship Issues","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/analisabartelt","availability":{},"slots":[],"officeByDay":{}},{"id":"c54","name":"Ashleigh Hidalgo","cred":"LCSW","license":"LCSW 129985","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/ashleigh-hidalgo","availability":{},"slots":[],"officeByDay":{}},{"id":"c55","name":"Carolina Oviedo-Munoz","cred":"LMFT","license":"LMFT 160021","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Families","Couples"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Family Systems","Narrative Therapy","Person-Centered"],"specialties":["Anxiety","Cultural Trauma","Depression","Immigration / 1st Gen","Life Transitions","Multicultural Issues","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/carolinaoviedomunoz","availability":{},"slots":[],"officeByDay":{}},{"id":"c56","name":"Consuelo Serrano Montesinos","cred":"AMFT","license":"AMFT 154038","lictype":"Associate","supervisor":"Dr. Tania Hormozi","status":"Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Families"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Person-Centered","Family Systems","Strength-Based"],"specialties":["Anxiety","Cultural Trauma","Depression","Immigration / 1st Gen","Life Transitions","Multicultural Issues","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/consuelo-serrano-montesinos","availability":{},"slots":[],"officeByDay":{}},{"id":"c57","name":"Farah Dehmoubed","cred":"AMFT","license":"AMFT 156655","lictype":"Associate","supervisor":"Jessica Zee","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Couples"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Attachment-Based","Person-Centered","Somatic"],"specialties":["Anxiety","Attachment Issues","Depression","Life Transitions","Relationship Issues","Trauma","Women's Issues"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/farah-dehmoubed","availability":{},"slots":[],"officeByDay":{}},{"id":"c58","name":"Kelsey Griffith","cred":"AMFT","license":"AMFT 160427","lictype":"Associate","supervisor":"Debra Sharon","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Person-Centered","Strength-Based","ACT"],"specialties":["Anxiety","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/kelsey-griffith","availability":{},"slots":[],"officeByDay":{}},{"id":"c59","name":"Lisa Bilal","cred":"ACSW","license":"ACSW 114601","lictype":"Associate","supervisor":"Amy Cortez","status":"Accepting","locations":["Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Grief and Loss","Parenting","Self-Esteem","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/lisabilal","availability":{},"slots":[],"officeByDay":{}},{"id":"c60","name":"Maria Martinez","cred":"LMFT","license":"LMFT 147238","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Families","Couples"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Family Systems","Narrative Therapy","Person-Centered"],"specialties":["Anxiety","Depression","Family of Origin Issues","Life Transitions","Multicultural Issues","Parenting","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/mariamartinez","availability":{},"slots":[],"officeByDay":{}},{"id":"c61","name":"Meagan Becker","cred":"ACSW","license":"ACSW 119176","lictype":"Associate","supervisor":"Mariana Brunnett-Lazarte","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Person-Centered","Strength-Based","Attachment-Based"],"specialties":["Anxiety","Depression","Grief and Loss","Life Transitions","Self-Esteem","Trauma"],"notes":"Strengths and resilience focused. Accepting clients.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/meagan-becker","availability":{},"slots":[],"officeByDay":{}},{"id":"c62","name":"Naomi Bernal","cred":"LMFT","license":"LMFT 110613","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Families"],"languages":["English","Spanish"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Family Systems","Narrative Therapy","Person-Centered"],"specialties":["Anxiety","BIPOC Issues","Depression","Immigration / 1st Gen","Life Transitions","Multicultural Issues","Trauma"],"notes":"Focused on improving mental health literacy and reducing disparities.","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/naomibernal","availability":{},"slots":[],"officeByDay":{}},{"id":"c63","name":"Nina Hebert","cred":"ACSW","license":"ACSW 119737","lictype":"Associate","supervisor":"Amy Cortez","status":"Accepting","locations":["Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","DBT","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/nina-hebert","availability":{},"slots":[],"officeByDay":{}},{"id":"c64","name":"Sara Alshaheri","cred":"AMFT","license":"AMFT 151352","lictype":"Associate","supervisor":"Andrew Listvinsky","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English","Arabic"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","ACT","MBSR","Person-Centered"],"specialties":["Anxiety","Cultural Trauma","Depression","Immigration / 1st Gen","Life Transitions","Multicultural Issues","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/sara-alshaheri","availability":{},"slots":[],"officeByDay":{}},{"id":"c65","name":"Shannon Beaumont","cred":"ACSW","license":"ACSW 124268","lictype":"Associate","supervisor":"Jennifer Whetstone","status":"Accepting","locations":["Clairemont","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Attachment-Based","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Life Transitions","Self-Esteem","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/shannon-beaumont","availability":{},"slots":[],"officeByDay":{}},{"id":"c66","name":"Tia Stevens","cred":"LMFT","license":"LMFT 162717","lictype":"Licensed","supervisor":"","status":"Accepting","locations":["Eastlake","Telehealth"],"populations":["Adults (24+)","Young Adults (18-24)","Teens (13-18)","Families"],"languages":["English"],"emdr":false,"kaiser":false,"champva":false,"modalities":["CBT","Family Systems","Person-Centered","Strength-Based"],"specialties":["Anxiety","Depression","Life Transitions","Relationship Issues","Self-Esteem","Trauma"],"notes":"","intakeLimit":{"day":0,"week":0},"profileUrl":"https://www.hopetherapygroup.com/teams/tiastevens","availability":{},"slots":[],"officeByDay":{}}];
+const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const TIME_BLOCKS=["Morning","Afternoon","Evening","Weekend"];
+const POPS=["Children (3+)","Children (4-8)","Children (5-12)","Children (10-13)","Teens (13-18)","Teens (16-18)","Young Adults (18-24)","Adults (24+)","Adults (55+)","Elderly / Retired (65+)","Couples","Families"];
+const LANGS=["English","Spanish","Farsi","Korean","Russian","Belarusian","German","Portuguese","Tagalog","Hindi","Punjabi","Arabic"];
+const CREDS=["LMFT","LCSW","LPCC","AMFT","ACSW","APCC","PSY","PhD","Other"];
+const AVC=[{bg:"#e8f0ed",c:"#1a3028"},{bg:"#f0ede8",c:"#3d2a10"},{bg:"#e6eef5",c:"#1a3050"},{bg:"#f5ede6",c:"#4a2010"},{bg:"#edf0e8",c:"#203020"},{bg:"#f0e8f0",c:"#3a1a3a"},{bg:"#e8f0f0",c:"#1a3838"},{bg:"#f5f0e8",c:"#3a3010"},{bg:"#e8ecf5",c:"#1a2848"},{bg:"#f0ece8",c:"#3a2818"}];
+
+let LOCS=["Clairemont","Eastlake","Rancho Bernardo","Telehealth","Los Angeles"];
+let FLAGS=["EMDR","Kaiser","CHAMPVA","Bilingual","Telehealth Only","In-Person Only","Sliding Scale","Evening Hours","Weekend Hours","Court-Ordered OK","Children Specialist","Trauma Certified"];
+let MODS=["ACT","Attachment-Based","Brief Strategic","CBT","CPP","CPT","Collaborative Problem Solving","DBT","EMDR","EFT","ERP","Family Systems","Gottman Method","IFS","MBCT","MBSR","Motivational Interviewing","Narrative Therapy","Person-Centered","Play Therapy","Psychodynamic","Sand Tray","SFBT","Somatic","Strength-Based","TF-CBT","TBRI","Art Therapy","Yoga Therapy","Positive Psychology","Integrative / Holistic Psychotherapy","Solution Focused Brief Therapy (SFBT)"];
+let ISSUES={"Mood & Mental Health":["Anxiety","Depression","Bipolar Disorder","Borderline Personality Disorder","Intrusive Thoughts","Mood Disorders","OCD","Obsessions and Compulsions","Perfectionism","Personality","Psychosis","Schizophrenia","Social Anxiety","Narcissistic Personality Disorder"],"Trauma & Crisis":["Trauma","PTSD","Complex Trauma","Cultural Trauma","Medical Trauma","DID","Domestic Violence","Self-Harm","Sexual Assault","Suicidal Ideation"],"Substance & Addiction":["Addiction","Alcohol / Substance Use","Substance Use Issues"],"Relationships & Family":["Attachment Issues","Blended Families","Co-Parenting","Developmental Attachment Ruptures","Family of Origin Issues","Family of Adults with Special Needs","High Conflict Divorces","Infidelity","Marital Counseling","Moving In / Cohabitation","Parenting","Poly Relationships","Premarital Counseling","Relationship Anxiety","Relationship Issues","Separation / Divorce","Career Related Issues","Bullying"],"Identity & Culture":["BIPOC Issues","LGBTQ","Immigration / 1st Gen","Identity Exploration","Multicultural Issues","Religious / Spiritual Stressors","Veterans / Military","Aging and Phase of Life"],"Children, Youth & Neurodiversity":["Adoption","ADHD","Autism Spectrum Disorder","Behavioral Issues","Disabilities","Down Syndrome","Foster / Adoption Youth and Families","Learning Disabilities","ODD","School Issues"],"Body & Health":["Body Dysmorphia","Body Image Concerns","Body Positivity","Chronic Pain / Health Issues","Eating Disorders","Holistic / Integrative Focus","Infertility","Nutrition and Mental Health","Perinatal / Postpartum","Sex Therapy","Sexual Dysfunction","Weight Loss"],"Wellbeing & Growth":["Adjustment and Life Issues","Anger and Irritability","Burnout","Caregiver Stress","Caregivers","Grief and Loss","High-Achieving Individuals","Life Transitions","Men's Issues","Mindfulness","Self Compassion","Self-Esteem","Sports-Related Issues","Stress Management","Women's Issues"],"Court & Specialized":["Court-Ordered Cases","Forensic","Perps / Sex Offenders"]};
+
+let DB=[], selIssues=new Set(), selMods=new Set(), expanded=new Set(), editId=null, formTab="info", confCb=null;
+let FB_URL="https://hope-intake-project-default-rtdb.firebaseio.com", FB_CONFIGURED=true;
+
+// -- FIREBASE --
+function getFbUrl(){return FB_URL;}
+
+function setSyncStatus(status){
+  const dot=document.getElementById("sync-dot");
+  const lbl=document.getElementById("sync-lbl");
+  if(!dot||!lbl)return;
+  if(status==="ok"){dot.className="sync-dot ok";lbl.textContent="live sync";lbl.className="sync-lbl ok";}
+  else if(status==="err"){dot.className="sync-dot err";lbl.textContent="offline";lbl.className="sync-lbl";}
+  else if(status==="spin"){dot.className="sync-dot spin";lbl.textContent="syncing...";lbl.className="sync-lbl";}
+  else{dot.className="sync-dot";lbl.textContent="local only";lbl.className="sync-lbl";}
+}
+
+async function fbWrite(path, data){
+  const url=getFbUrl()+"/"+path+".json";
+  const r=await fetch(url,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  if(!r.ok)throw new Error("Firebase write failed: "+r.status);
+  return r.json();
+}
+
+async function fbRead(path){
+  const url=getFbUrl()+"/"+path+".json";
+  const r=await fetch(url);
+  if(!r.ok)throw new Error("Firebase read failed: "+r.status);
+  return r.json();
+}
+
+async function fbPatch(path, data){
+  const url=getFbUrl()+"/"+path+".json";
+  const r=await fetch(url,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  if(!r.ok)throw new Error("Firebase patch failed: "+r.status);
+  return r.json();
+}
+
+async function fbDelete(path){
+  const url=getFbUrl()+"/"+path+".json";
+  const r=await fetch(url,{method:"DELETE"});
+  if(!r.ok)throw new Error("Firebase delete failed: "+r.status);
+}
+
+// -- SETUP --
+function validateFbUrl(val){
+  const btn=document.getElementById("setup-save-btn");
+  if(btn)btn.disabled=!val.includes("firebaseio.com");
+}
+function saveFirebaseUrl(){
+  const val=(document.getElementById("fb-url-inp").value||"").trim().replace(/\/$/,"");
+  if(!val.includes("firebaseio.com")){alert("Please enter a valid Firebase Realtime Database URL.");return;}
+  FB_URL=val;FB_CONFIGURED=true;
+  localStorage.setItem("hope_fb_url",FB_URL);
+  document.getElementById("setup-banner").style.display="none";
+  toast("Connected to Firebase!");
+  initFirebase();
+}
+function skipSetup(){
+  FB_CONFIGURED=false;
+  localStorage.setItem("hope_fb_url","LOCAL");
+  document.getElementById("setup-banner").style.display="none";
+  setSyncStatus("local");
+  load();initUI();
+}
+function showSetup(){
+  const banner=document.getElementById("setup-banner");
+  if(banner){banner.style.display="flex";}
+  const inp=document.getElementById("fb-url-inp");
+  if(inp&&FB_URL)inp.value=FB_URL;
+}
+
+async function initFirebase(){
+  setSyncStatus("spin");
+  try{
+    // Try to read existing data
+    const data=await fbRead("hope");
+    if(data&&data.db&&data.db.length>0){
+      DB=data.db;
+      if(data.locs)LOCS=data.locs;
+      if(data.mods)MODS=data.mods;
+      if(data.issues)ISSUES=data.issues;
+      if(data.flags)FLAGS=data.flags;
+      // Merge any new seed clinicians not in Firebase
+      const fbNames=new Set(DB.map(c=>c.name.toLowerCase()));
+      const missing=SEED.filter(c=>!fbNames.has(c.name.toLowerCase()));
+      if(missing.length>0){
+        DB=[...DB,...missing];
+        await fbWrite("hope/db",DB);
+      }
+    } else {
+      // First run - seed Firebase
+      DB=JSON.parse(JSON.stringify(SEED));
+      await fbWrite("hope",{db:DB,locs:LOCS,mods:MODS,issues:ISSUES,flags:FLAGS});
+      toast("Database initialized with "+DB.length+" clinicians!");
+    }
+    save();
+    setSyncStatus("ok");
+  }catch(err){
+    console.warn("Firebase init failed:",err.message);
+    setSyncStatus("err");
+    load(); // fall back to localStorage
+  }
+  initUI();
+}
+
+function load(){
+  try{
+    const s=localStorage.getItem("hope_v10")||localStorage.getItem("hope_v10_bak");
+    if(s){const p=JSON.parse(s);if(p.db&&p.db.length>0){DB=p.db;if(p.locs)LOCS=p.locs;if(p.mods)MODS=p.mods;if(p.issues)ISSUES=p.issues;return;}}
+  }catch(e){}
+  DB=JSON.parse(JSON.stringify(SEED));
+}
+
+function save(){
+  try{
+    const d=JSON.stringify({db:DB,locs:LOCS,mods:MODS,issues:ISSUES,t:Date.now()});
+    localStorage.setItem("hope_v10",d);
+    localStorage.setItem("hope_v10_bak",d);
+  }catch(e){}
+}
+
+async function saveAll(){
+  save();
+  if(!FB_CONFIGURED||!FB_URL||FB_URL==="LOCAL")return;
+  try{
+    setSyncStatus("spin");
+    await fbWrite("hope",{db:DB,locs:LOCS,mods:MODS,issues:ISSUES,flags:FLAGS});
+    setSyncStatus("ok");
+  }catch(err){
+    console.warn("Firebase save failed:",err.message);
+    setSyncStatus("err");
+  }
+}
+
+async function saveOneClinician(c){
+  save();
+  if(!FB_CONFIGURED||!FB_URL||FB_URL==="LOCAL")return;
+  try{
+    setSyncStatus("spin");
+    const idx=DB.findIndex(x=>x.id===c.id);
+    await fbPatch("hope/db",{[idx]:c});
+    setSyncStatus("ok");
+  }catch(err){
+    // Fall back to full save
+    try{await fbWrite("hope/db",DB);setSyncStatus("ok");}
+    catch(e){console.warn("Firebase clinician save failed:",e.message);setSyncStatus("err");}
+  }
+}
+
+function initUI(){
+  populateDynamicDropdowns();buildChips();buildModChips();render();renderRoster();renderSettings();renderFlagsSettings();updateHeader();
+}
+
+window.onload=function(){
+  const storedUrl=localStorage.getItem("hope_fb_url");
+  if(storedUrl&&storedUrl.includes("firebaseio.com")){
+    FB_URL=storedUrl;FB_CONFIGURED=true;
+  }
+  // Firebase URL is pre-configured
+  localStorage.setItem("hope_fb_url",FB_URL);
+  load();initFirebase();
+};
+
+function updateHeader(){
+  const acc=DB.filter(c=>c.status==="Accepting").length;
+  const st=document.getElementById("hdr-stat");
+  if(st)st.innerHTML="<b>"+acc+"</b> of "+DB.length+" accepting";
+}
+
+function populateDynamicDropdowns(){
+  ["f-loc","r-loc-f"].forEach(function(id){
+    const el=document.getElementById(id);if(!el)return;
+    const cur=el.value;
+    el.innerHTML="<option value=''>Any location</option>"+LOCS.map(function(l){return"<option"+(l===cur?" selected":"")+">"+l+"</option>";}).join("");
+  });
+  const rs=document.getElementById("r-spec-f");
+  if(rs){const allI=Object.values(ISSUES).flat();rs.innerHTML="<option value=''>All specialties</option>"+allI.map(function(i){return"<option>"+i+"</option>";}).join("");}
+  const sg=document.getElementById("s-iss-grp");
+  if(sg){const cur=sg.value;sg.innerHTML=Object.keys(ISSUES).map(function(g){return"<option"+(g===cur?" selected":"")+">"+g+"</option>";}).join("");}
+}
+
+function showView(v){
+  document.querySelectorAll(".view").forEach(function(el){el.classList.remove("on");});
+  document.querySelectorAll(".ntab").forEach(function(el){el.classList.remove("on");});
+  document.getElementById("v-"+v).classList.add("on");
+  document.getElementById("nt-"+v).classList.add("on");
+  if(v==="roster")renderRoster();
+  if(v==="settings")renderSettings();
+}
+
+function buildChips(){
+  const q=(document.getElementById("iss-srch")?document.getElementById("iss-srch").value:"").toLowerCase();
+  const n=selIssues.size;
+  const cnt=document.getElementById("iss-cnt"),clr=document.getElementById("iss-clr");
+  if(cnt){cnt.style.display=n?"":"none";cnt.textContent=n;}
+  if(clr)clr.style.display=n?"":"none";
+  let html="";
+  for(const grp in ISSUES){
+    const items=ISSUES[grp];
+    const vis=items.filter(function(i){return i.toLowerCase().includes(q);});
+    if(!vis.length)continue;
+    html+="<div><div class='grp-lbl'>"+grp+"</div><div class='chips'>"+vis.map(function(i){return"<button class='chip"+(selIssues.has(i)?" on":"")+"' onclick=\"toggleIssue('"+e(i)+"')\">"+i+"</button>";}).join("")+"</div></div>";
+  }
+  document.getElementById("grp-wrap").innerHTML=html||"<div style='color:var(--t3);font-size:11px'>No matching concerns.</div>";
+}
+function toggleIssue(i){if(selIssues.has(i))selIssues.delete(i);else selIssues.add(i);buildChips();render();}
+function clearIssues(){selIssues.clear();buildChips();render();}
+
+function buildModChips(){
+  var q=(document.getElementById("mod-srch")?document.getElementById("mod-srch").value:"").toLowerCase();
+  var n=selMods.size;
+  var cnt=document.getElementById("mod-cnt"),clr=document.getElementById("mod-clr");
+  if(cnt){cnt.style.display=n?"":"none";cnt.textContent=n;}
+  if(clr)clr.style.display=n?"":"none";
+  var wrap=document.getElementById("mod-wrap");
+  if(!wrap)return;
+  var vis=MODS.filter(function(m){return m.toLowerCase().includes(q);});
+  var html=vis.map(function(m){
+    var cls="chip"+(selMods.has(m)?" on":"");
+    return"<button class='"+cls+"' data-mod='"+e(m)+"' onclick='toggleModEl(this)'>"+m+"</button>";
+  }).join("");
+  wrap.innerHTML=html;
+}
+function toggleModEl(el){
+  var m=el.dataset.mod;
+  if(!m)return;
+  if(selMods.has(m))selMods.delete(m);else selMods.add(m);
+  el.className="chip"+(selMods.has(m)?" on":"");
+  var cnt=document.getElementById("mod-cnt"),clr=document.getElementById("mod-clr");
+  var n=selMods.size;
+  if(cnt){cnt.style.display=n?"":"none";cnt.textContent=n;}
+  if(clr)clr.style.display=n?"":"none";
+  render();
+}
+function toggleMod(m){if(selMods.has(m))selMods.delete(m);else selMods.add(m);buildModChips();render();}
+function clearMods(){selMods.clear();buildModChips();render();}
+
+function calcScore(c){
+  const loc=document.getElementById("f-loc").value;
+  const pop=document.getElementById("f-pop").value;
+  const ins=document.getElementById("f-ins").value;
+  const lang=document.getElementById("f-lang").value;
+  const avail=document.getElementById("f-avail").value;
+  const issues=Array.from(selIssues);
+  let score=0,total=0;
+  if(issues.length){total+=55;const mt=issues.filter(function(i){return(c.specialties||[]).some(function(s){return s.toLowerCase()===i.toLowerCase()||s.toLowerCase().includes(i.toLowerCase().split(" ")[0]);});}).length;score+=Math.round(mt/issues.length*55);}
+  if(loc){total+=18;if((c.locations||[]).includes(loc)||Object.values(c.officeByDay||{}).includes(loc))score+=18;}
+  if(pop){total+=12;if((c.populations||[]).includes(pop))score+=12;}
+  if(lang){total+=8;if((c.languages||[]).some(function(l){return l.toLowerCase()===lang.toLowerCase();}))score+=8;}
+  if(ins==="kaiser"){total+=5;if(c.kaiser)score+=5;}
+  if(selMods.size>0){total+=10;const mods=Array.from(selMods);const mm=mods.filter(function(m){return(c.modalities||[]).some(function(cm){return cm.toLowerCase()===m.toLowerCase();});}).length;score+=Math.round(mm/mods.length*10);}
+  if(ins==="champva"){total+=5;if(c.champva)score+=5;}
+  if(avail){total+=5;const allB=Object.values(c.availability||{}).flat();if(allB.includes(avail)||(avail==="Weekend"&&(c.availability&&(c.availability.Saturday||c.availability.Sunday))))score+=5;}
+  return total===0?null:Math.round(score/total*100);
+}
+
+function render(){
+  const loc=document.getElementById("f-loc").value;
+  const pop=document.getElementById("f-pop").value;
+  const ins=document.getElementById("f-ins").value;
+  const lang=document.getElementById("f-lang").value;
+  const lic=document.getElementById("f-lic").value;
+  const avail=document.getElementById("f-avail").value;
+  const sort=document.getElementById("sort-sel").value;
+  const hasAny=loc||pop||ins||lang||lic||avail||selIssues.size>0;
+  const meta=document.getElementById("res-meta");
+  if(!hasAny){meta.textContent="Select filters to find matches";document.getElementById("results-wrap").innerHTML="<div class='empty'><div class='empty-ico'>&#127807;</div><div class='empty-t'>Ready to match</div><div class='empty-s'>Select filters or concerns on the left.</div></div>";return;}
+  let list=DB.filter(function(c){
+    if(c.status!=="Accepting")return false;
+    if(lic==="Licensed"&&c.lictype!=="Licensed")return false;
+    if(loc&&!(c.locations||[]).includes(loc)&&!Object.values(c.officeByDay||{}).includes(loc))return false;
+    if(pop&&!(c.populations||[]).includes(pop))return false;
+    if(lang&&!(c.languages||[]).some(function(l){return l.toLowerCase()===lang.toLowerCase();}))return false;
+    if(ins==="kaiser"&&!c.kaiser)return false;
+    if(ins==="champva"&&!c.champva)return false;
+    if(avail){const allB=Object.values(c.availability||{}).flat();if(!allB.includes(avail)&&!(avail==="Weekend"&&c.availability&&(c.availability.Saturday||c.availability.Sunday)))return false;}
+    if(selMods.size>0){const mods=Array.from(selMods);if(!mods.some(function(m){return(c.modalities||[]).some(function(cm){return cm.toLowerCase()===m.toLowerCase();});}))return false;}
+    var fgF=document.getElementById("f-flag")?document.getElementById("f-flag").value:"";
+    if(fgF){if(fgF==="Kaiser"&&!c.kaiser)return false;if(fgF==="CHAMPVA"&&!c.champva)return false;if(fgF==="EMDR"&&!c.emdr)return false;if(!["Kaiser","CHAMPVA","EMDR"].includes(fgF)&&!(c.flags||[]).includes(fgF))return false;}
+    return true;
+  }).map(function(c){return Object.assign({},c,{_sc:calcScore(c)});});
+  if(sort==="name")list.sort(function(a,b){return a.name.localeCompare(b.name);});
+  else if(sort==="location")list.sort(function(a,b){return((a.locations||[])[0]||"").localeCompare((b.locations||[])[0]||"");});
+  else list.sort(function(a,b){if(a._sc===null&&b._sc===null)return a.name.localeCompare(b.name);if(a._sc===null)return 1;if(b._sc===null)return -1;return b._sc-a._sc;});
+  meta.textContent=list.length+" clinician"+(list.length!==1?"s":"")+" accepting"+(list.length===0?" -- try adjusting filters":"");
+  if(!list.length){document.getElementById("results-wrap").innerHTML="<div class='empty'><div class='empty-ico'>&#128269;</div><div class='empty-t'>No matches</div><div class='empty-s'>Try removing a filter.</div></div>";return;}
+  document.getElementById("results-wrap").innerHTML="<div class='cards'>"+list.map(buildCard).join("")+"</div>";
+}
+
+function buildCard(c){
+  const idx=DB.findIndex(function(x){return x.id===c.id;});
+  const ac=AVC[idx%AVC.length];
+  const init=c.name.replace(/^Dr\.\s*/i,"").split(" ").filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("");
+  const sc=c._sc;
+  const scBg=sc===null?"":sc>=70?"var(--acl)":sc>=40?"#e8f0ed":"var(--aml)";
+  const scCol=sc===null?"":sc>=70?"#1a5c2a":sc>=40?"#2d4a3e":"#7a5200";
+  const barCol=sc===null?"":sc>=70?"#4a7c59":sc>=40?"#2d4a3e":"#c9a84c";
+  const isExp=expanded.has(c.id);
+  const issues=Array.from(selIssues);
+  const mi=issues.filter(function(i){return(c.specialties||[]).some(function(s){return s.toLowerCase()===i.toLowerCase()||s.toLowerCase().includes(i.toLowerCase().split(" ")[0]);});});
+  const other=(c.specialties||[]).filter(function(s){return!mi.some(function(i){return s.toLowerCase()===i.toLowerCase()||s.toLowerCase().includes(i.toLowerCase().split(" ")[0]);});});
+  const avDays=Object.keys(c.availability||{}).filter(function(d){return(c.availability[d]||[]).length>0;});
+  let avHtml="";
+  if(avDays.length){
+    avHtml="<div class='avs'><div class='av-ttl'>&#128197; Availability</div><div class='av-grid'>"+avDays.map(function(day){const blocks=(c.availability[day]||[]).join(", ");const office=(c.officeByDay||{})[day]||"";return"<div class='av-day'><span>"+day.slice(0,3)+"</span>: "+blocks+(office?" <small style='color:var(--t3)'>"+office+"</small>":"")+"</div>";}).join("")+"</div></div>";
+  }
+  const limitHtml=(c.intakeLimit&&c.intakeLimit.day>0?"<span style='color:var(--am)'>&#9888; Max "+c.intakeLimit.day+"/day</span>":"")+
+    (c.intakeLimit&&c.intakeLimit.week>0?"<span style='color:var(--am)'>&#9888; Max "+c.intakeLimit.week+"/wk</span>":"");
+  return"<div class='ccard' id='card-"+c.id+"'>"
+    +"<div class='mbar'><div class='mfill' style='width:"+(sc||0)+"%;background:"+barCol+"'></div></div>"
+    +"<div class='cbody'><div class='ctop'>"
+    +"<div class='cav' style='background:"+ac.bg+";color:"+ac.c+"'>"+init+"</div>"
+    +"<div class='ci'><div class='cname'>"+c.name+(sc!==null?"<span class='cpct' style='background:"+scBg+";color:"+scCol+"'>"+sc+"%</span>":"")+"</div>"
+    +"<div class='ccred'>"+c.cred+" &middot; "+c.lictype+(c.supervisor?" &middot; sup. "+c.supervisor.split(" ").slice(-1)[0]:"")+"</div></div>"
+    +"<div class='cbdg'><span class='badge "+(c.lictype==="Licensed"?"b-l":"b-s")+"'>"+(c.lictype==="Licensed"?"Licensed":"Associate")+"</span>"
+    +(c.emdr?"<span class='badge b-e'>EMDR</span>":"")+(c.kaiser?"<span class='badge b-k'>Kaiser</span>":"")+(c.champva?"<span class='badge b-k'>CHAMPVA</span>":"")+((c.flags||[]).map(function(f){return"<span class='badge b-s'>"+f+"</span>";}).join(""))+"</div></div>"
+    +"<div class='qrow'>"+((c.locations||[]).length?"<span>&#128205; "+c.locations.join(", ")+"</span>":"")+((c.populations||[]).length?"<span>&#128101; "+c.populations.slice(0,3).join(", ")+(c.populations.length>3?" +"+(c.populations.length-3):"")+"</span>":"")+((c.languages||[]).filter(function(l){return l!=="English";}).length?"<span>&#127760; "+c.languages.join(", ")+"</span>":"")+limitHtml+"</div>"
+    +(c.notes?"<div class='cnotes'>"+c.notes+"</div>":"")
+    +(mi.length?"<div class='mw'><div class='mlbl'>Matched Concerns</div><div class='tags'>"+mi.map(function(s){return"<span class='tag m'>&#10003; "+s+"</span>";}).join("")+"</div></div>":"")
+    +"</div>"+avHtml
+    +"<div class='xmore"+(isExp?" open":"")+"' id='exp-"+c.id+"'>"
+    +(other.length?"<div class='xlbl'>All Specialties</div><div class='tags' style='margin-bottom:5px'>"+other.map(function(s){return"<span class='tag'>"+s+"</span>";}).join("")+"</div>":"")
+    +((c.modalities||[]).length?"<div class='xlbl'>Modalities</div><div class='tags'>"+c.modalities.map(function(m){return"<span class='tag mo'>"+m+"</span>";}).join("")+"</div>":"")
+    +"</div><div class='cact'>"
+    +"<button class='b-more' onclick=\"toggleExp('"+c.id+"')\">"+(isExp?"&#9650; Less":"&#9660; More")+"</button>"
+    +(c.profileUrl?"<a class='b-prof' href='"+c.profileUrl+"' target='_blank'>Profile &#8594;</a>":"")
+    +"<button class='stog "+(c.status==="Accepting"?"acc":"nac")+"' onclick=\"quickToggle('"+c.id+"')\">&#9679; "+c.status+"</button>"
+    +"<button class='b-edit' onclick=\"openEdit('"+c.id+"')\">Edit</button>"
+    +"<button class='b-del' onclick=\"confirmDel('"+c.id+"')\">Remove</button>"
+    +"</div></div>";
+}
+
+function quickToggle(id){
+  const c=DB.find(function(x){return x.id===id;});if(!c)return;
+  c.status=c.status==="Accepting"?"Not Accepting":"Accepting";
+  saveOneClinician(c);updateHeader();render();renderRoster();
+  toast(c.name+": "+c.status);
+}
+function toggleExp(id){
+  if(expanded.has(id))expanded.delete(id);else expanded.add(id);
+  const el=document.getElementById("exp-"+id);
+  const btn=document.querySelector("#card-"+id+" .b-more");
+  if(el)el.classList.toggle("open");
+  if(btn)btn.innerHTML=el&&el.classList.contains("open")?"&#9650; Less":"&#9660; More";
+}
+function resetAll(){
+  ["f-loc","f-pop","f-ins","f-lang","f-lic","f-avail","ai-ta"].forEach(function(id){const el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("ai-st").textContent="";
+  selIssues.clear();selMods.clear();buildChips();buildModChips();render();
+}
+
+function renderRoster(){
+  const q=(document.getElementById("r-srch")?document.getElementById("r-srch").value:"").toLowerCase();
+  const sf=document.getElementById("r-status")?document.getElementById("r-status").value:"";
+  const lf=document.getElementById("r-loc-f")?document.getElementById("r-loc-f").value:"";
+  const licf=document.getElementById("r-lic-f")?document.getElementById("r-lic-f").value:"";
+  const specf=document.getElementById("r-spec-f")?document.getElementById("r-spec-f").value:"";
+  let list=DB.filter(function(c){
+    if(sf&&c.status!==sf)return false;
+    if(lf&&!(c.locations||[]).includes(lf)&&!Object.values(c.officeByDay||{}).includes(lf))return false;
+    if(licf&&c.lictype!==licf)return false;
+    if(specf&&!(c.specialties||[]).some(function(s){return s.toLowerCase()===specf.toLowerCase()||s.toLowerCase().includes(specf.toLowerCase().split(" ")[0]);}))return false;
+    if(q&&!c.name.toLowerCase().includes(q)&&!c.cred.toLowerCase().includes(q)&&!(c.license||"").toLowerCase().includes(q))return false;
+    return true;
+  }).sort(function(a,b){return a.name.localeCompare(b.name);});
+  document.getElementById("r-meta").textContent=list.length+" of "+DB.length;
+  document.getElementById("roster-body").innerHTML=list.map(function(c){
+    const ac=AVC[DB.findIndex(function(x){return x.id===c.id;})%AVC.length];
+    const init=c.name.replace(/^Dr\.\s*/i,"").split(" ").filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("");
+    const avDays=Object.keys(c.availability||{}).filter(function(d){return(c.availability[d]||[]).length>0;});
+    const avChips=avDays.map(function(d){
+      const blocks=(c.availability[d]||[]).map(function(b){return b[0];}).join("");
+      const office=(c.officeByDay||{})[d]||"";
+      return"<span class='r-av-chip'>"+d.slice(0,3)+" "+blocks+(office?" - "+office.slice(0,3):"")+"</span>";
+    }).join("");
+    return"<tr><td><div style='display:flex;align-items:center;gap:7px'><div style='width:28px;height:28px;border-radius:50%;background:"+ac.bg+";color:"+ac.c+";display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0'>"+init+"</div><div><div class='r-name'>"+c.name+"</div><div class='r-cred'>"+c.cred+" &middot; "+(c.license||"")+"</div></div></div></td>"
+    +"<td><button class='st-pill "+(c.status==="Accepting"?"acc":"nac")+"' onclick=\"quickToggle('"+c.id+"')\">&#9679; "+c.status+"</button></td>"
+    +"<td style='font-size:11px;color:var(--t2)'>"+(c.locations||[]).join(", ")+"</td>"
+    +"<td>"+( avChips||"<span style='color:var(--t3);font-style:italic;font-size:10px'>None set</span>")+"</td>"
+    +"<td><div class='r-tags'>"+(c.specialties||[]).slice(0,3).map(function(s){return"<span class='r-tag'>"+s+"</span>";}).join("")+((c.specialties||[]).length>3?"<span class='r-tag'>+"+(c.specialties.length-3)+"</span>":"")+"</div></td>"
+    +"<td><div style='display:flex;flex-wrap:wrap;gap:2px'>"+(c.emdr?"<span class='badge b-e' style='font-size:9px'>EMDR</span>":"")+(c.kaiser?"<span class='badge b-k' style='font-size:9px'>Kaiser</span>":"")+(c.champva?"<span class='badge b-k' style='font-size:9px'>CHAMPVA</span>":"")+((c.flags||[]).map(function(f){return"<span class='badge b-s' style='font-size:9px'>"+f+"</span>";}).join(""))+"<span class='badge "+(c.lictype==="Licensed"?"b-l":"b-s")+"' style='font-size:9px'>"+c.lictype+"</span></div></td>"
+    +"<td><div class='r-actions'><button class='r-edit' onclick=\"openEdit('"+c.id+"')\">Edit</button><button class='r-del' onclick=\"confirmDel('"+c.id+"')\">Remove</button></div></td></tr>";
+  }).join("");
+}
+
+function renderSettings(){
+  let html="";
+  for(const grp in ISSUES){
+    html+="<div class='sgrp-lbl'>"+grp+"</div>";
+    ISSUES[grp].forEach(function(item,idx){html+="<div class='sitem'><span class='sitem-name'>"+item+"</span><button class='sdel' onclick=\"removeIssue('"+e(grp)+"',"+idx+")\">&#215;</button></div>";});
+  }
+  document.getElementById("s-issues-body").innerHTML=html;
+  document.getElementById("iss-count-lbl").textContent=Object.values(ISSUES).flat().length+" concerns";
+  document.getElementById("s-mods-body").innerHTML=MODS.map(function(m,i){return"<div class='sitem'><span class='sitem-name'>"+m+"</span><button class='sdel' onclick='removeMod("+i+")'>&#215;</button></div>";}).join("");
+  document.getElementById("s-locs-body").innerHTML=LOCS.map(function(l,i){return"<div class='sitem'><span class='sitem-name'>"+l+"</span><button class='sdel' onclick='removeLoc("+i+")'>&#215;</button></div>";}).join("");
+  populateDynamicDropdowns();renderFlagsSettings();
+}
+function renderFlagsSettings(){
+  var sb=document.getElementById("s-flags-body");
+  if(!sb)return;
+  sb.innerHTML=FLAGS.map(function(f,i){
+    return"<div class='sitem'><span class='sitem-name'>"+f+"</span>"
+      +"<button class='sdel' onclick='removeFlag("+i+")'>&#215;</button></div>";
+  }).join("");
+}
+function addFlag(){
+  var val=document.getElementById("s-flag-new").value.trim();
+  if(!val)return;
+  if(FLAGS.includes(val)){toast("Already exists.");return;}
+  FLAGS.push(val);
+  document.getElementById("s-flag-new").value="";
+  saveAll();renderFlagsSettings();populateDynamicDropdowns();toast("Flag added!");
+}
+function removeFlag(i){
+  if(!confirm("Remove this flag?"))return;
+  FLAGS.splice(i,1);
+  saveAll();renderFlagsSettings();populateDynamicDropdowns();
+}
+function addIssue(){const v=document.getElementById("s-iss-new").value.trim(),g=document.getElementById("s-iss-grp").value;if(!v)return;if(!ISSUES[g])ISSUES[g]=[];if(ISSUES[g].includes(v)){toast("Already exists.");return;}ISSUES[g].push(v);document.getElementById("s-iss-new").value="";saveAll();renderSettings();buildChips();toast("Added!");}
+function removeIssue(grp,idx){if(!confirm("Remove?"))return;ISSUES[grp].splice(idx,1);saveAll();renderSettings();buildChips();}
+function addModality(){const v=document.getElementById("s-mod-new").value.trim();if(!v)return;if(MODS.includes(v)){toast("Already exists.");return;}MODS.push(v);document.getElementById("s-mod-new").value="";saveAll();renderSettings();toast("Added!");}
+function removeMod(i){if(!confirm("Remove?"))return;MODS.splice(i,1);saveAll();renderSettings();}
+function addLocation(){const v=document.getElementById("s-loc-new").value.trim();if(!v)return;if(LOCS.includes(v)){toast("Already exists.");return;}LOCS.push(v);document.getElementById("s-loc-new").value="";saveAll();renderSettings();populateDynamicDropdowns();toast("Added!");}
+function removeLoc(i){if(!confirm("Remove?"))return;LOCS.splice(i,1);saveAll();renderSettings();populateDynamicDropdowns();}
+
+async function analyzeNotes(){
+  const notes=document.getElementById("ai-ta").value.trim();if(!notes){alert("Paste call notes first.");return;}
+  const btn=document.getElementById("ai-btn"),st=document.getElementById("ai-st");
+  btn.disabled=true;st.textContent="Analyzing...";
+  try{
+    const allI=Object.values(ISSUES).flat();
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,messages:[{role:"user",content:"Extract from intake notes. Return ONLY JSON: {\"location\":\"one of ["+LOCS.join(",")+"] or empty\",\"population\":\"one of ["+POPS.join(",")+"] or empty\",\"insurance\":\"kaiser or champva or empty\",\"language\":\"non-English if mentioned or empty\",\"issues\":[\"up to 8 from: "+allI.join(",")+"\"]}\nNotes: "+notes}]})});
+    const data=await resp.json();
+    const p=JSON.parse(data.content[0].text.replace(/```json|```/g,"").trim());
+    if(p.location)document.getElementById("f-loc").value=p.location;
+    if(p.population)document.getElementById("f-pop").value=p.population;
+    if(p.insurance)document.getElementById("f-ins").value=p.insurance;
+    if(p.language)document.getElementById("f-lang").value=p.language;
+    if(p.issues&&p.issues.length){selIssues.clear();p.issues.forEach(function(i){const m=allI.find(function(a){return a.toLowerCase()===i.toLowerCase();})||allI.find(function(a){return a.toLowerCase().includes(i.toLowerCase().split(" ")[0]);});if(m)selIssues.add(m);});buildChips();}
+    st.textContent="Done! "+selIssues.size+" concerns found.";setTimeout(function(){st.textContent="";},4000);render();
+  }catch(err){st.textContent="Error - fill manually.";setTimeout(function(){st.textContent="";},3000);}
+  btn.disabled=false;
+}
+
+function openAdd(){
+  editId=null;formTab="info";
+  window._fs={name:"",cred:"LMFT",license:"",lictype:"Licensed",supervisor:"",status:"Accepting",notes:"",profileUrl:"",intakeLimit:{day:0,week:0},locations:[],populations:[],languages:["English"],emdr:false,kaiser:false,champva:false,modalities:[],specialties:[],availability:{},officeByDay:{}};
+  document.getElementById("fm-ttl").textContent="Add Clinician";
+  renderForm();document.getElementById("form-modal").classList.add("open");
+}
+function openEdit(id){
+  editId=id;formTab="info";
+  const src=DB.find(function(x){return x.id===id;});
+  window._fs=JSON.parse(JSON.stringify(src));
+  if(!window._fs.availability)window._fs.availability={};
+  if(!window._fs.officeByDay)window._fs.officeByDay={};
+  document.getElementById("fm-ttl").textContent="Edit Clinician";
+  renderForm();document.getElementById("form-modal").classList.add("open");
+}
+function closeForm(){document.getElementById("form-modal").classList.remove("open");editId=null;window._fs=null;}
+function swTab(t){formTab=t;document.querySelectorAll(".mtab").forEach(function(b){b.classList.remove("on");});document.getElementById("tab-"+t).classList.add("on");renderForm();}
+
+function buildFlagChips(emdr,kaiser,champva,customFlags){
+  var html="";
+  // Built-in flags
+  var builtIn=[
+    {key:"emdr",label:"EMDR Trained",sel:emdr},
+    {key:"kaiser",label:"Kaiser",sel:kaiser},
+    {key:"champva",label:"CHAMPVA",sel:champva}
+  ];
+  builtIn.forEach(function(f){
+    html+="<div class='ms"+(f.sel?" sel":"")+"' onclick='toggleBuiltinFlag(this)' data-flag='"+f.key+"'>"+f.label+"</div>";
+  });
+  // Custom flags
+  FLAGS.forEach(function(f){
+    var sel=(customFlags||[]).includes(f);
+    html+="<div class='ms"+(sel?" sel":"")+"' onclick='toggleFs(this)' data-field='flags' data-val='"+e(f)+"'>"+f+"</div>";
+  });
+  return html;
+}
+function toggleBuiltinFlag(el){
+  if(!window._fs)return;
+  var flag=el.dataset.flag;
+  if(!flag)return;
+  window._fs[flag]=!window._fs[flag];
+  el.className="ms"+(window._fs[flag]?" sel":"");
+}
+function renderForm(){
+  if(!window._fs)return;
+  const fs=window._fs;
+  function v(k,d){return(fs[k]!==undefined&&fs[k]!==null)?fs[k]:d;}
+  function msW(field,opts,cls){
+    cls=cls||"";
+    return opts.map(function(o){
+      const sel=(v(field,[])||[]).includes(o);
+      return"<div class='ms"+(sel?" sel"+(cls?" "+cls:""):"")+"' onclick='toggleFs(this)' data-field='"+field+"' data-val='"+e(o)+"'>"+o+"</div>";
+    }).join("");
+  }
+  const body=document.getElementById("fm-body");
+
+  if(formTab==="info"){
+    body.innerHTML="<div class='fg2m'>"
+    +"<div><label class='flbl'>Full Name *</label><input class='fi' value='"+e(v("name",""))+"' oninput='if(window._fs)window._fs.name=this.value'></div>"
+    +"<div><label class='flbl'>Credential</label><select class='fi' onchange='if(window._fs)window._fs.cred=this.value'>"+CREDS.map(function(x){return"<option"+(v("cred","")==x?" selected":"")+">"+x+"</option>";}).join("")+"</select></div>"
+    +"<div><label class='flbl'>License Number</label><input class='fi' value='"+e(v("license",""))+"' oninput='if(window._fs)window._fs.license=this.value' placeholder='e.g. LMFT 53763'></div>"
+    +"<div><label class='flbl'>License Type</label><select class='fi' onchange='if(window._fs)window._fs.lictype=this.value'><option"+(v("lictype","")==="Licensed"?" selected":"")+">Licensed</option><option"+(v("lictype","")==="Associate"?" selected":"")+">Associate</option></select></div>"
+    +"<div><label class='flbl'>Supervisor</label><input class='fi' value='"+e(v("supervisor",""))+"' oninput='if(window._fs)window._fs.supervisor=this.value' placeholder='Leave blank if N/A'></div>"
+    +"<div><label class='flbl'>Status</label><select class='fi' onchange='if(window._fs)window._fs.status=this.value'><option"+(v("status","")==="Accepting"?" selected":"")+">Accepting</option><option"+(v("status","")==="Not Accepting"?" selected":"")+">Not Accepting</option></select></div>"
+    +"<div><label class='flbl'>Max Intakes/Day (0=none)</label><input class='fi' type='number' min='0' value='"+(v("intakeLimit",{day:0}).day||0)+"' oninput='if(window._fs)window._fs.intakeLimit=Object.assign({},window._fs.intakeLimit,{day:parseInt(this.value)||0})'></div>"
+    +"<div><label class='flbl'>Max Intakes/Week (0=none)</label><input class='fi' type='number' min='0' value='"+(v("intakeLimit",{week:0}).week||0)+"' oninput='if(window._fs)window._fs.intakeLimit=Object.assign({},window._fs.intakeLimit,{week:parseInt(this.value)||0})'></div>"
+    +"<div class='full'><label class='flbl'>Profile URL</label><input class='fi' value='"+e(v("profileUrl",""))+"' oninput='if(window._fs)window._fs.profileUrl=this.value' placeholder='https://www.hopetherapygroup.com/teams/...'></div>"
+    +"<div class='full'><label class='flbl'>Notes / Intake Restrictions</label><textarea class='fi' oninput='if(window._fs)window._fs.notes=this.value'>"+e(v("notes",""))+"</textarea></div>"
+    +"</div>"
+    +"<label class='flbl'>Locations</label><div class='ms-w'>"+msW("locations",LOCS)+"</div>"
+    +"<label class='flbl'>Populations</label><div class='ms-w'>"+msW("populations",POPS)+"</div>"
+    +"<label class='flbl'>Languages</label><div class='ms-w'>"+msW("languages",LANGS)+"</div>"
+    +"<label class='flbl'>Flags <span style='font-size:9px;color:var(--t3);font-weight:400;text-transform:none'>(select all that apply)</span></label>"
+    +"<div class='ms-w'>"+buildFlagChips(v("emdr",false),v("kaiser",false),v("champva",false),v("flags",[]))+"</div>";
+  }
+if(formTab==="spec"){
+    body.innerHTML="<label class='flbl' style='margin-top:0'>Modalities</label><div class='ms-w'>"+msW("modalities",MODS,"g")+"</div>"
+    +Object.keys(ISSUES).map(function(grp){return"<label class='flbl'>"+grp+"</label><div class='ms-w'>"+msW("specialties",ISSUES[grp])+"</div>";}).join("");
+  }
+
+  if(formTab==="avail"){
+    var av=v("availability",{});
+    var od=v("officeByDay",{});
+    var avHtml="<div style='font-size:11px;color:var(--t2);margin-bottom:10px;background:var(--cr);border-radius:var(--r);padding:8px 10px;line-height:1.6'>Check the time blocks each day the clinician works. Select their office location for each day.</div><div class='av-editor'>";
+    DAYS.forEach(function(day){
+      var blocks=av[day]||[];
+      var office=od[day]||"";
+      avHtml+="<div class='av-day-row' id='avrow-"+day+"'>";
+      avHtml+="<div class='av-day-name'>"+day+"</div>";
+      avHtml+="<div class='av-blocks'>";
+      TIME_BLOCKS.forEach(function(b){
+        var sel=blocks.includes(b)?" sel":"";
+        avHtml+="<div class='av-block"+sel+"' data-day='"+day+"' data-block='"+b+"' onclick='avBlockClick(this)'>"+b+"</div>";
+      });
+      avHtml+="</div>";
+      avHtml+="<div class='av-office-row'><span class='av-office-lbl'>Office:</span><select class='av-office-sel' data-day='"+day+"' onchange='avOfficeChange(this)'>";
+      avHtml+="<option value=''>-- Not working this day --</option>";
+      LOCS.forEach(function(l){avHtml+="<option"+(l===office?" selected":"")+">"+l+"</option>";});
+      avHtml+="</select></div></div>";
+    });
+    avHtml+="</div>";
+    body.innerHTML=avHtml;
+  }
+}
+
+function toggleFs(el){
+  if(!window._fs)return;
+  const field=el.dataset.field,val=el.dataset.val;
+  if(!field||!val)return;
+  const arr=window._fs[field]||[];
+  if(arr.includes(val)){window._fs[field]=arr.filter(function(x){return x!==val;});el.className="ms";}
+  else{window._fs[field]=arr.concat([val]);el.className="ms sel"+(field==="modalities"?" g":"");}
+}
+
+function avBlockClick(el){
+  if(!window._fs)return;
+  var day=el.dataset.day, block=el.dataset.block;
+  if(!day||!block)return;
+  if(!window._fs.availability)window._fs.availability={};
+  var arr=window._fs.availability[day]||[];
+  if(arr.includes(block)){
+    window._fs.availability[day]=arr.filter(function(x){return x!==block;});
+    el.className="av-block";
+  } else {
+    window._fs.availability[day]=arr.concat([block]);
+    el.className="av-block sel";
+  }
+}
+function avOfficeChange(sel){
+  if(!window._fs)return;
+  var day=sel.dataset.day, loc=sel.value;
+  if(!day)return;
+  if(!window._fs.officeByDay)window._fs.officeByDay={};
+  if(loc)window._fs.officeByDay[day]=loc;
+  else delete window._fs.officeByDay[day];
+}
+function toggleAvBlock(day,block){}
+function setAvOffice(day,loc){}
+
+function saveForm(){
+  if(!window._fs){alert("Form state lost. Please close and reopen.");return;}
+  const fs=window._fs;
+  if(!(fs.name||"").trim()){alert("Name is required.");return;}
+  const data={
+    name:fs.name.trim(),cred:fs.cred||"LMFT",license:fs.license||"",lictype:fs.lictype||"Licensed",
+    supervisor:fs.supervisor||"",status:fs.status||"Accepting",
+    intakeLimit:fs.intakeLimit||{day:0,week:0},profileUrl:fs.profileUrl||"",notes:fs.notes||"",
+    locations:fs.locations||[],populations:fs.populations||[],languages:fs.languages||["English"],
+    emdr:!!fs.emdr,kaiser:!!fs.kaiser,champva:!!fs.champva,flags:fs.flags||[],
+    modalities:fs.modalities||[],specialties:fs.specialties||[],
+    availability:fs.availability||{},officeByDay:fs.officeByDay||{},slots:[]
+  };
+  if(editId){
+    const idx=DB.findIndex(function(x){return x.id===editId;});
+    DB[idx]=Object.assign({},DB[idx],data);
+    toast(data.name+" saved!");
+  } else {
+    data.id="c"+Date.now();
+    DB.push(data);
+    toast(data.name+" added!");
+  }
+  saveAll();updateHeader();closeForm();render();renderRoster();showView("roster");
+}
+
+function confirmDel(id){
+  const c=DB.find(function(x){return x.id===id;});
+  document.getElementById("cf-ttl").textContent="Remove Clinician?";
+  document.getElementById("cf-body").innerHTML="This will permanently remove <strong>"+c.name+"</strong>.";
+  confCb=function(){DB=DB.filter(function(x){return x.id!==id;});saveAll();updateHeader();toast(c.name+" removed.");render();renderRoster();};
+  document.getElementById("conf-modal").classList.add("open");
+  document.getElementById("cf-ok").onclick=function(){if(confCb)confCb();closeConf();};
+}
+function closeConf(){document.getElementById("conf-modal").classList.remove("open");confCb=null;}
+
+function exportData(){
+  try{
+    const data=JSON.stringify({db:DB,locs:LOCS,mods:MODS,issues:ISSUES},null,2);
+    const blob=new Blob([data],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="hope_backup_"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+    toast("Backup downloaded!");
+  }catch(err){alert("Export failed: "+err.message);}
+}
+
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},2500);}
+function e(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;").replace(/</g,"&lt;");}
+["form-modal","conf-modal"].forEach(function(id){document.getElementById(id).addEventListener("click",function(ev){if(ev.target===ev.currentTarget){if(id==="form-modal")closeForm();else closeConf();}});});
+</script>
+</body>
+</html>
